@@ -1,4 +1,6 @@
 require("dotenv").config();
+require("@nomiclabs/hardhat-ethers");
+require("@nomicfoundation/hardhat-ethers");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -13,7 +15,7 @@ module.exports = {
   },
   networks: {
     baseTestnet: {
-      url: "https://goerli.base.org",
+      url: "https://base-goerli.g.alchemy.com/v2/demo",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 84531
     }

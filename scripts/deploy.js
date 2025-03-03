@@ -1,14 +1,17 @@
+const hre = require("hardhat");
+
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  const [deployer] = await hre.ethers.getSigners();
 
   console.log("Deploying contracts with the account:", deployer.address);
+  console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const GolfBetTracker = await ethers.getContractFactory("GolfBetTracker");
+  const GolfBetTracker = await hre.ethers.getContractFactory("GolfBetTracker");
   const golfBetTracker = await GolfBetTracker.deploy();
 
-  await golfBetTracker.waitForDeployment();
+  await golfBetTracker.deployed();
 
-  console.log("GolfBetTracker deployed to:", await golfBetTracker.getAddress());
+  console.log("GolfBetTracker deployed to:", golfBetTracker.address);
 }
 
 main()
