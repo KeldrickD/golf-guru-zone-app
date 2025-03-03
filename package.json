@@ -1,11 +1,16 @@
 {
   "name": "golf-guru-zone",
   "version": "1.0.0",
+  "private": true,
   "description": "AI-powered golf performance analysis tool",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy:contract": "npx hardhat run scripts/deploy.js --network baseTestnet",
+    "server": "node server/server.js"
   },
   "keywords": [
     "golf",
@@ -16,25 +21,30 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@coinbase/wallet-sdk": "^4.3.0",
-    "@wagmi/core": "^2.16.5",
-    "connectkit": "^1.8.2",
+    "@coinbase/wallet-sdk": "^3.9.1",
+    "@openzeppelin/contracts": "^5.0.1",
+    "connectkit": "^1.7.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "ethers": "^5.8.0",
-    "express": "^4.21.2",
-    "next": "^15.2.0",
-    "openai": "^4.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.23.5",
-    "wagmi": "^2.14.12"
+    "dotenv": "^16.4.1",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2",
+    "next": "14.1.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "viem": "^2.7.3",
+    "wagmi": "^2.5.5"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
-    "@openzeppelin/contracts": "^5.2.0",
-    "hardhat": "^2.22.19",
-    "nodemon": "^3.0.1"
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "hardhat": "^2.19.5",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
   },
   "engines": {
     "node": ">=14.0.0"
