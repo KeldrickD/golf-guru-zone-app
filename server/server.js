@@ -90,6 +90,23 @@ app.post('/api/analyze', async (req, res) => {
     }
 });
 
+// Placeholder routes for Stripe integration
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    res.json({ url: process.env.STRIPE_LINK || '#' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/create-premium-session', async (req, res) => {
+  try {
+    res.json({ url: process.env.STRIPE_PREMIUM_LINK || '#' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Serve the frontend
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
