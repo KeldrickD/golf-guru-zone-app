@@ -1,59 +1,72 @@
-import { WagmiConfig, createConfig } from 'wagmi';
-import { baseGoerli } from 'wagmi/chains';
-import { ConnectKitProvider, ConnectKitButton, getDefaultConfig } from 'connectkit';
-import BetForm from '@/components/BetForm';
-import BetList from '@/components/BetList';
+'use client';
 
-const config = createConfig(
-  getDefaultConfig({
-    appName: 'Golf Guru Zone',
-    chains: [baseGoerli],
-    walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-  })
-);
+import Link from 'next/link';
+import { Book, BrainCircuit, History } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+
+const features = [
+  {
+    icon: Book,
+    title: 'Golf Rules Assistant',
+    description: 'Get instant answers to your golf rules questions from our AI-powered assistant.',
+    href: '/rules',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'AI Betting Recommendations',
+    description: 'Receive personalized betting recommendations based on historical data and current conditions.',
+    href: '/recommendations',
+  },
+  {
+    icon: History,
+    title: 'Performance History',
+    description: 'Track your betting performance and view detailed analytics of your past bets.',
+    href: '/recommendation-history',
+  },
+];
 
 export default function Home() {
   return (
-    <WagmiConfig config={config}>
-      <ConnectKitProvider>
-        <main className="min-h-screen bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <header className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Golf Guru Zone
-              </h1>
-              <p className="text-lg text-gray-600 mb-4">
-                Track and settle your golf bets on Base
-              </p>
-              <div className="flex justify-center">
-                <ConnectKitButton />
-              </div>
-            </header>
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
+        <h1 className="text-4xl font-bold text-center mb-4">
+          Welcome to Golf Guru Zone
+        </h1>
+        <p className="text-xl text-center text-muted-foreground mb-12">
+          Your AI-powered golf betting companion
+        </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Create New Bet</h2>
-                <BetForm />
-              </div>
-              <div>
-                <BetList />
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {features.map((feature) => (
+            <Card key={feature.title} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <feature.icon className="h-8 w-8 mb-2 text-primary" />
+                <CardTitle>{feature.title}</CardTitle>
+                <CardDescription>{feature.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href={feature.href}>
+                  <Button className="w-full">Try Now</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-            <footer className="mt-16 text-center text-gray-600">
-              <p>
-                Free Tier: 3 bets/month |{' '}
-                <a
-                  href={process.env.NEXT_PUBLIC_STRIPE_PREMIUM_LINK || '#'}
-                  className="text-green-600 hover:text-green-700"
-                >
-                  Upgrade to Premium
-                </a>
-              </p>
-            </footer>
-          </div>
-        </main>
-      </ConnectKitProvider>
-    </WagmiConfig>
+        <div className="text-center">
+          <Link href="/rules">
+            <Button size="lg" className="mr-4">
+              Try Rules Assistant
+            </Button>
+          </Link>
+          <Link href="/recommendations">
+            <Button size="lg" variant="outline">
+              View Recommendations
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 } 

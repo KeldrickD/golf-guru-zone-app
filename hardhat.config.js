@@ -1,6 +1,7 @@
+require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
-require("@nomiclabs/hardhat-ethers");
-require("@nomicfoundation/hardhat-ethers");
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "0000000000000000000000000000000000000000000000000000000000000000";
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -14,16 +15,25 @@ module.exports = {
     }
   },
   networks: {
-    baseTestnet: {
-      url: "https://base-goerli.g.alchemy.com/v2/demo",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 84531
+    "base-sepolia": {
+      url: "https://sepolia.base.org",
+      accounts: [PRIVATE_KEY],
+      chainId: 84532
     }
   },
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./src/artifacts"
+  etherscan: {
+    apiKey: {
+      "base-sepolia": process.env.BASESCAN_API_KEY || ""
+    },
+    customChains: [
+      {
+        network: "base-sepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org"
+        }
+      }
+    ]
   }
 };

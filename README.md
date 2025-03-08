@@ -1,99 +1,132 @@
-# Golf Guru Zone - Bet Tracker
+# Golf Guru Zone - Modern P2P Betting Platform
 
-A decentralized golf bet tracking application built on Base (Coinbase's L2 blockchain).
+A visual-first, intuitive peer-to-peer betting platform for golfers with a focus on exceptional UX and monetization.
 
 ## Features
 
-- Create and track golf bets (Nassau, Skins, Match Play)
-- On-chain bet settlement
-- Fiat payments via Stripe
-- Crypto payments via Coinbase Wallet
-- Free tier (3 bets/month) and Premium tier
+- 🎯 **Visual-First Design**: Intuitive interfaces that require minimal reading
+- 💰 **Tiered Subscription Model**: Free, Premium, and Pro tiers with different features
+- 📊 **Advanced Analytics**: Track your betting performance and stats
+- 🔗 **Smart Contract Integration**: Secure betting using blockchain technology
+- 👥 **QR Code Sharing**: Easily invite friends to join bets
+- 📱 **Mobile-First Design**: Optimized for on-course use
 
 ## Tech Stack
 
-- Frontend: Next.js, React, TailwindCSS
-- Blockchain: Solidity, Hardhat, Base Testnet
-- Backend: Express.js
-- Wallet Integration: WalletConnect, Coinbase Wallet SDK
+- **Frontend**: Next.js 14, React, Styled Components
+- **Blockchain**: Ethereum (Base Sepolia Testnet)
+- **Smart Contract**: Solidity
+- **Styling**: Custom design system
 
-## Setup
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18 or later
+- NPM or Yarn
+- MetaMask or Coinbase Wallet
+
+### Installation
 
 1. Clone the repository:
-```bash
-git clone <repository-url>
-cd golf-guru-zone
-```
+   ```
+   git clone https://github.com/yourusername/golf-guru-zone.git
+   cd golf-guru-zone
+   ```
 
 2. Install dependencies:
-```bash
-npm install
+   ```
+   npm install
+   ```
+
+3. Create a `.env.local` file with the following variables:
+   ```
+   NEXT_PUBLIC_CONTRACT_ADDRESS=0xeAc974baD29a758ab9945B7a84628F9e26B95199
+   NEXT_PUBLIC_USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+   NEXT_PUBLIC_RPC_URL=https://sepolia.base.org
+   ```
+
+### Development
+
+Run the development server:
+   ```
+   npm run dev
+   ```
+
+Visit http://localhost:3000/modern-ui to see the new interface.
+
+### Building for Production
+
+```
+npm run build
 ```
 
-3. Create `.env` file:
-```bash
-cp .env.example .env
-```
+### Deployment
 
-4. Fill in your environment variables in `.env`
+1. Install Vercel CLI:
+   ```
+   npm install -g vercel
+   ```
 
-5. Deploy the smart contract:
-```bash
-npx hardhat compile
-npx hardhat run scripts/deploy.js --network baseTestnet
-```
+2. Deploy to Vercel:
+   ```
+   vercel deploy --prod
+   ```
 
-6. Update the `NEXT_PUBLIC_CONTRACT_ADDRESS` in `.env` with your deployed contract address
+## Monetization Strategy
 
-## Development
+### Subscription Tiers
 
-1. Start the development server:
-```bash
-npm run dev
-```
+- **Free Tier**: 
+  - 3% transaction fee
+  - Maximum 5 active bets
+  - Basic betting features
 
-2. Start the Express server:
-```bash
-npm run server
-```
+- **Premium Tier** ($5.99/month):
+  - 1.5% transaction fee
+  - Unlimited active bets
+  - Basic analytics
+  - Private betting groups
 
-## Deployment to Vercel
+- **Pro Tier** ($14.99/month):
+  - Zero transaction fees
+  - Advanced analytics by course and player
+  - Tournament creation tools
+  - API access
 
-1. Push your code to GitHub
+### Revenue Streams
 
-2. Create a new project on Vercel
+1. **Transaction Fees**: Percentage fees on betting volumes
+2. **Subscription Revenue**: Monthly recurring revenue from premium users
+3. **Tournament Fees**: Percentage from tournament pot for large events
+4. **White-Label Solutions**: Custom versions for golf courses and clubs
 
-3. Connect your GitHub repository
+## Project Structure
 
-4. Add environment variables in Vercel project settings
-
-5. Deploy!
-
-## Base Testnet Setup
-
-1. Get Base Goerli ETH from the faucet:
-   - Visit https://www.coinbase.com/faucets/base-ethereum-goerli-faucet
-
-2. Add Base Testnet to MetaMask:
-   - Network Name: Base Goerli
-   - RPC URL: https://goerli.base.org
-   - Chain ID: 84531
-   - Currency Symbol: ETH
-   - Block Explorer URL: https://goerli.basescan.org
+- `/src/components`: UI components including modern visual betting forms
+- `/src/components/ui`: Reusable UI components (Button, Card, BottomNavBar)
+- `/src/services`: Services for wallet connection, contracts, subscriptions
+- `/src/styles`: Design system and global styles
+- `/contracts`: Smart contract code
+- `/scripts`: Deployment scripts for contracts
 
 ## Smart Contract
 
-The smart contract is deployed on Base Testnet and handles:
-- Bet creation and tracking
-- Settlement logic
-- Free tier limitations
+The `GolfBetTracker` contract handles:
 
-## Premium Features
+- Bet creation and joining
+- USDC token transfers
+- Fee collection based on subscription tier
+- Voting for winners
+- Bet settlement
 
-Upgrade to Premium ($4.99/month) to unlock:
-- Unlimited bets
-- Automated Stripe payment links
-- Crypto payout options
+## Future Enhancements
+
+- Tournament bracket system
+- Course-specific analytics
+- Social features and friend lists
+- Native mobile apps with offline functionality
+- Integration with golf tracking apps
 
 ## License
 
