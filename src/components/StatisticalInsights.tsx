@@ -22,37 +22,36 @@ export function StatisticalInsights({ roundStats, selectedMetric }: StatisticalI
 
     const insights = {
       score: {
-        recent: recentRounds.reduce((sum, r) => sum + r.score, 0) / recentRounds.length,
-        older: olderRounds.reduce((sum, r) => sum + r.score, 0) / olderRounds.length,
-        best: Math.min(...sortedRounds.map(r => r.score)),
-        trend: null as number | null,
-        goal: null as number | null,
+        recent: recentRounds.reduce((sum, r) => sum + r.totalScore, 0) / recentRounds.length,
+        older: olderRounds.reduce((sum, r) => sum + r.totalScore, 0) / olderRounds.length,
+        best: Math.min(...sortedRounds.map(r => r.totalScore)),
+        trend: recentRounds.length > 0 ? recentRounds[recentRounds.length - 1].totalScore - recentRounds[0].totalScore : 0,
       },
-      accuracy: {
-        fairways: {
-          recent: recentRounds.reduce((sum, r) => sum + (r.fairwaysHit / r.fairwaysTotal) * 100, 0) / recentRounds.length,
-          older: olderRounds.reduce((sum, r) => sum + (r.fairwaysHit / r.fairwaysTotal) * 100, 0) / olderRounds.length,
-        },
-        greens: {
-          recent: recentRounds.reduce((sum, r) => sum + (r.greensInRegulation / 18) * 100, 0) / recentRounds.length,
-          older: olderRounds.reduce((sum, r) => sum + (r.greensInRegulation / 18) * 100, 0) / olderRounds.length,
-        },
+      fairways: {
+        recent: recentRounds.reduce((sum, r) => sum + (r.fairwaysHit / r.totalFairways) * 100, 0) / recentRounds.length,
+        older: olderRounds.reduce((sum, r) => sum + (r.fairwaysHit / r.totalFairways) * 100, 0) / olderRounds.length,
+        best: Math.max(...sortedRounds.map(r => (r.fairwaysHit / r.totalFairways) * 100)),
+        trend: recentRounds.length > 0 ? (recentRounds[recentRounds.length - 1].fairwaysHit / recentRounds[recentRounds.length - 1].totalFairways) * 100 - (recentRounds[0].fairwaysHit / recentRounds[0].totalFairways) * 100 : 0,
       },
-      putting: {
-        recent: recentRounds.reduce((sum, r) => sum + r.putts, 0) / recentRounds.length,
-        older: olderRounds.reduce((sum, r) => sum + r.putts, 0) / olderRounds.length,
-        best: Math.min(...sortedRounds.map(r => r.putts)),
+      gir: {
+        recent: recentRounds.reduce((sum, r) => sum + (r.greensInRegulation / 18) * 100, 0) / recentRounds.length,
+        older: olderRounds.reduce((sum, r) => sum + (r.greensInRegulation / 18) * 100, 0) / olderRounds.length,
+        best: Math.max(...sortedRounds.map(r => (r.greensInRegulation / 18) * 100)),
+        trend: recentRounds.length > 0 ? (recentRounds[recentRounds.length - 1].greensInRegulation / 18) * 100 - (recentRounds[0].greensInRegulation / 18) * 100 : 0,
       },
-      driving: {
-        recent: recentRounds.reduce((sum, r) => sum + (r.drivingDistance || 0), 0) / recentRounds.length,
-        older: olderRounds.reduce((sum, r) => sum + (r.drivingDistance || 0), 0) / olderRounds.length,
-        max: Math.max(...sortedRounds.map(r => r.drivingDistance || 0)),
+      putts: {
+        recent: recentRounds.reduce((sum, r) => sum + r.totalPutts, 0) / recentRounds.length,
+        older: olderRounds.reduce((sum, r) => sum + r.totalPutts, 0) / olderRounds.length,
+        best: Math.min(...sortedRounds.map(r => r.totalPutts)),
+        trend: recentRounds.length > 0 ? recentRounds[recentRounds.length - 1].totalPutts - recentRounds[0].totalPutts : 0,
+      },
+      drivingDistance: {
+        recent: recentRounds.reduce((sum, r) => sum + r.avgDriveDistance, 0) / recentRounds.length,
+        older: olderRounds.reduce((sum, r) => sum + r.avgDriveDistance, 0) / olderRounds.length,
+        best: Math.max(...sortedRounds.map(r => r.avgDriveDistance)),
+        trend: recentRounds.length > 0 ? recentRounds[recentRounds.length - 1].avgDriveDistance - recentRounds[0].avgDriveDistance : 0,
       },
     };
-
-    // Calculate trends (positive numbers indicate improvement)
-    insights.score.trend = insights.score.older - insights.score.recent;
-    insights.score.goal = Math.max(70, insights.score.best - 2); // Goal: 2 strokes better than best or 70
 
     return insights;
   };
@@ -73,203 +72,171 @@ export function StatisticalInsights({ roundStats, selectedMetric }: StatisticalI
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Recent Performance</CardTitle>
+          <CardTitle>Score Analysis</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last 5 Rounds Avg</span>
+            <div>
+              <span className="text-sm text-muted-foreground">Recent Average</span>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold">{insights.score.recent.toFixed(1)}</span>
-                {insights.score.trend > 0 ? (
+                {insights.score.recent < insights.score.older ? (
                   <TrendingDown className="h-4 w-4 text-green-500" />
                 ) : (
-                  <TrendingUp className="h-4 w-4 text-red-500" />
+                  <TrendingUp className="h-4 w-4 text-destructive" />
                 )}
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Previous 5 Rounds Avg</span>
+              <span className="text-sm text-muted-foreground">Previous Average</span>
               <span className="text-xl">{insights.score.older.toFixed(1)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Best Score</span>
               <span className="text-xl text-green-500">{insights.score.best}</span>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Goal Tracking</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              <span className="text-sm text-muted-foreground">Target Score:</span>
-              <span className="text-xl font-bold">{insights.score.goal}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {insights.score.recent <= insights.score.goal
-                ? "Congratulations! You've reached your target score. Consider setting a new goal."
-                : `You're ${(insights.score.recent - insights.score.goal).toFixed(1)} strokes away from your target.`}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </>
-  );
-
-  const renderAccuracyInsights = () => (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Fairways</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Recent Accuracy</span>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{insights.accuracy.fairways.recent.toFixed(1)}%</span>
-                {insights.accuracy.fairways.recent > insights.accuracy.fairways.older ? (
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Previous Accuracy</span>
-              <span className="text-xl">{insights.accuracy.fairways.older.toFixed(1)}%</span>
+              <span className="text-sm text-muted-foreground">Trend</span>
+              <span className={`text-xl ${insights.score.trend < 0 ? 'text-green-500' : 'text-destructive'}`}>
+                {insights.score.trend < 0 ? `${Math.abs(insights.score.trend).toFixed(1)} better` : `${insights.score.trend.toFixed(1)} worse`}
+              </span>
             </div>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Greens in Regulation</CardTitle>
+          <CardTitle>Fairway Accuracy</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Recent GIR</span>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{insights.accuracy.greens.recent.toFixed(1)}%</span>
-                {insights.accuracy.greens.recent > insights.accuracy.greens.older ? (
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Previous GIR</span>
-              <span className="text-xl">{insights.accuracy.greens.older.toFixed(1)}%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </>
-  );
-
-  const renderPuttingInsights = () => (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Putting Trends</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div>
               <span className="text-sm text-muted-foreground">Recent Average</span>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{insights.putting.recent.toFixed(1)}</span>
-                {insights.putting.recent < insights.putting.older ? (
-                  <TrendingDown className="h-4 w-4 text-green-500" />
+                <span className="text-2xl font-bold">{insights.fairways.recent.toFixed(1)}%</span>
+                {insights.fairways.recent > insights.fairways.older ? (
+                  <TrendingUp className="h-4 w-4 text-green-500" />
                 ) : (
-                  <TrendingUp className="h-4 w-4 text-red-500" />
+                  <TrendingDown className="h-4 w-4 text-destructive" />
                 )}
               </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Previous Average</span>
-              <span className="text-xl">{insights.putting.older.toFixed(1)}</span>
+              <span className="text-xl">{insights.fairways.older.toFixed(1)}%</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Best Performance</span>
-              <span className="text-xl text-green-500">{insights.putting.best}</span>
+              <span className="text-xl text-green-500">{insights.fairways.best.toFixed(1)}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Trend</span>
+              <span className={`text-xl ${insights.fairways.trend > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                {insights.fairways.trend > 0 ? `${insights.fairways.trend.toFixed(1)}% better` : `${Math.abs(insights.fairways.trend).toFixed(1)}% worse`}
+              </span>
             </div>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Putting Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              {insights.putting.recent < insights.putting.older
-                ? "Your putting is improving! Keep practicing your current routine."
-                : "Consider focusing on putting practice to reduce your average putts per round."}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Your best putting round required {insights.putting.best} putts. 
-              Try to maintain consistency closer to this number.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </>
-  );
-
-  const renderDrivingInsights = () => (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Driving Distance</CardTitle>
+          <CardTitle>Greens in Regulation</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div>
               <span className="text-sm text-muted-foreground">Recent Average</span>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{insights.driving.recent.toFixed(0)} yds</span>
-                {insights.driving.recent > insights.driving.older ? (
+                <span className="text-2xl font-bold">{insights.gir.recent.toFixed(1)}%</span>
+                {insights.gir.recent > insights.gir.older ? (
                   <TrendingUp className="h-4 w-4 text-green-500" />
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-red-500" />
+                  <TrendingDown className="h-4 w-4 text-destructive" />
                 )}
               </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Previous Average</span>
-              <span className="text-xl">{insights.driving.older.toFixed(0)} yds</span>
+              <span className="text-xl">{insights.gir.older.toFixed(1)}%</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Longest Drive</span>
-              <span className="text-xl text-green-500">{insights.driving.max} yds</span>
+              <span className="text-sm text-muted-foreground">Best Performance</span>
+              <span className="text-xl text-green-500">{insights.gir.best.toFixed(1)}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Trend</span>
+              <span className={`text-xl ${insights.gir.trend > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                {insights.gir.trend > 0 ? `${insights.gir.trend.toFixed(1)}% better` : `${Math.abs(insights.gir.trend).toFixed(1)}% worse`}
+              </span>
             </div>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Distance Analysis</CardTitle>
+          <CardTitle>Putting</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              {insights.driving.recent > insights.driving.older
-                ? "Your driving distance is improving! Keep working on your swing speed and technique."
-                : "Consider focusing on swing mechanics and flexibility to increase your driving distance."}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Your longest drive was {insights.driving.max} yards. 
-              This shows your potential for distance when everything clicks.
-            </p>
+          <div className="space-y-4">
+            <div>
+              <span className="text-sm text-muted-foreground">Recent Average</span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold">{insights.putts.recent.toFixed(1)}</span>
+                {insights.putts.recent < insights.putts.older ? (
+                  <TrendingDown className="h-4 w-4 text-green-500" />
+                ) : (
+                  <TrendingUp className="h-4 w-4 text-destructive" />
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Previous Average</span>
+              <span className="text-xl">{insights.putts.older.toFixed(1)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Best Performance</span>
+              <span className="text-xl text-green-500">{insights.putts.best}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Trend</span>
+              <span className={`text-xl ${insights.putts.trend < 0 ? 'text-green-500' : 'text-destructive'}`}>
+                {insights.putts.trend < 0 ? `${Math.abs(insights.putts.trend).toFixed(1)} better` : `${insights.putts.trend.toFixed(1)} worse`}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Driving Distance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <span className="text-sm text-muted-foreground">Recent Average</span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold">{insights.drivingDistance.recent.toFixed(0)} yds</span>
+                {insights.drivingDistance.recent > insights.drivingDistance.older ? (
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 text-destructive" />
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Previous Average</span>
+              <span className="text-xl">{insights.drivingDistance.older.toFixed(0)} yds</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Best Performance</span>
+              <span className="text-xl text-green-500">{insights.drivingDistance.best} yds</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Trend</span>
+              <span className={`text-xl ${insights.drivingDistance.trend > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                {insights.drivingDistance.trend > 0 ? `${insights.drivingDistance.trend.toFixed(0)} yds better` : `${Math.abs(insights.drivingDistance.trend).toFixed(0)} yds worse`}
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -281,11 +248,11 @@ export function StatisticalInsights({ roundStats, selectedMetric }: StatisticalI
       case "score":
         return renderScoreInsights();
       case "accuracy":
-        return renderAccuracyInsights();
+        return renderScoreInsights();
       case "putting":
-        return renderPuttingInsights();
+        return renderScoreInsights();
       case "driving":
-        return renderDrivingInsights();
+        return renderScoreInsights();
     }
   };
 

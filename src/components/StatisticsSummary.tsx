@@ -18,27 +18,49 @@ export function StatisticsSummary({ roundStats }: StatisticsSummaryProps) {
       averagePutts: 0,
       averageDrivingDistance: 0,
       totalRounds: roundStats.length,
-      totalBunkers: 0,
-      totalPenalties: 0,
+      fairwaysHit: 0,
+      totalFairways: 0,
+      greensInRegulation: 0,
+      totalPutts: 0,
+      bestPutts: Infinity,
+      worstPutts: -Infinity,
+      totalDrivingDistance: 0,
+      drivingDistanceRounds: 0,
+      bestDrivingDistance: -Infinity,
     };
 
     roundStats.forEach((round) => {
       // Scoring
-      stats.averageScore += round.score;
-      stats.bestScore = Math.min(stats.bestScore, round.score);
-      stats.worstScore = Math.max(stats.worstScore, round.score);
+      stats.averageScore += round.totalScore;
+      stats.bestScore = Math.min(stats.bestScore, round.totalScore);
+      stats.worstScore = Math.max(stats.worstScore, round.totalScore);
+
+      // Fairways
+      stats.fairwaysHit += round.fairwaysHit;
+      stats.totalFairways += round.totalFairways;
+
+      // Greens
+      stats.greensInRegulation += round.greensInRegulation;
+
+      // Putting
+      stats.totalPutts += round.totalPutts;
+      stats.bestPutts = Math.min(stats.bestPutts, round.totalPutts);
+      stats.worstPutts = Math.max(stats.worstPutts, round.totalPutts);
+
+      // Driving Distance
+      if (round.avgDriveDistance) {
+        stats.totalDrivingDistance += round.avgDriveDistance;
+        stats.drivingDistanceRounds++;
+        stats.bestDrivingDistance = Math.max(stats.bestDrivingDistance, round.avgDriveDistance);
+      }
 
       // Fairways and Greens
-      stats.fairwayPercentage += (round.fairwaysHit / round.fairwaysTotal) * 100;
+      stats.fairwayPercentage += (round.fairwaysHit / round.totalFairways) * 100;
       stats.girPercentage += (round.greensInRegulation / 18) * 100;
 
       // Putting and Other Stats
-      stats.averagePutts += round.putts;
-      if (round.drivingDistance) {
-        stats.averageDrivingDistance += round.drivingDistance;
-      }
-      stats.totalBunkers += round.bunkersHit;
-      stats.totalPenalties += round.penaltyStrokes;
+      stats.averagePutts += round.totalPutts;
+      stats.averageDrivingDistance += round.avgDriveDistance;
     });
 
     // Calculate averages
@@ -46,7 +68,7 @@ export function StatisticsSummary({ roundStats }: StatisticsSummaryProps) {
     stats.fairwayPercentage /= stats.totalRounds;
     stats.girPercentage /= stats.totalRounds;
     stats.averagePutts /= stats.totalRounds;
-    stats.averageDrivingDistance /= stats.totalRounds;
+    stats.averageDrivingDistance /= stats.drivingDistanceRounds;
 
     return stats;
   };
@@ -55,7 +77,7 @@ export function StatisticsSummary({ roundStats }: StatisticsSummaryProps) {
   if (!stats) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Scoring</CardTitle>
@@ -116,23 +138,9 @@ export function StatisticsSummary({ roundStats }: StatisticsSummaryProps) {
                 {(stats.averagePutts / (stats.girPercentage / 100 * 18)).toFixed(2)}
               </dd>
             </div>
-          </dl>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Mistakes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="space-y-2">
             <div>
-              <dt className="text-sm text-muted-foreground">Bunkers per Round</dt>
-              <dd className="text-2xl font-bold">{(stats.totalBunkers / stats.totalRounds).toFixed(1)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">Penalties per Round</dt>
-              <dd className="text-xl font-semibold">{(stats.totalPenalties / stats.totalRounds).toFixed(1)}</dd>
+              <dt className="text-sm text-muted-foreground">Best Putting Round</dt>
+              <dd className="text-xl font-semibold text-green-600">{stats.bestPutts}</dd>
             </div>
           </dl>
         </CardContent>

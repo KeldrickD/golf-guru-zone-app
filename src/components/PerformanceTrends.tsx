@@ -19,7 +19,7 @@ import {
 } from "recharts";
 import { CustomTooltip } from "@/components/ui/CustomTooltip";
 import { Button } from "@/components/ui/Button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { StatisticalInsights } from "./StatisticalInsights";
 import DrilldownModal from "@/components/DrilldownModal";
 
@@ -82,12 +82,12 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
   // Prepare data for charts
   const chartData = filteredRounds.map((round, index) => ({
     name: new Date(round.date).toLocaleDateString(),
-    score: round.score,
-    scoreToPar: round.score - round.par,
-    fairwayPercentage: (round.fairwaysHit / round.fairwaysTotal) * 100,
+    score: round.totalScore,
+    scoreToPar: round.totalScore - round.coursePar,
+    fairwayPercentage: (round.fairwaysHit / round.totalFairways) * 100,
     girPercentage: (round.greensInRegulation / 18) * 100,
-    putts: round.putts,
-    drivingDistance: round.drivingDistance || 0,
+    puttsPerRound: round.totalPutts,
+    avgDriveDistance: round.avgDriveDistance,
     round,
     index,
   }));
@@ -198,7 +198,7 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
 
       case "putting":
         const puttingAverage = movingAverage(
-          chartData.map(d => d.putts),
+          chartData.map(d => d.puttsPerRound),
           3
         );
         return (
@@ -219,7 +219,7 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
               <Legend />
               <Line
                 type="monotone"
-                dataKey="putts"
+                dataKey="puttsPerRound"
                 name="Putts"
                 stroke="#d946ef"
                 strokeWidth={2}
@@ -249,7 +249,7 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
         );
 
       case "driving":
-        const trendLine = calculateTrendLine(chartData, "drivingDistance");
+        const trendLine = calculateTrendLine(chartData, "avgDriveDistance");
         return (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
@@ -267,7 +267,7 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
               <Legend />
               <Area
                 type="monotone"
-                dataKey="drivingDistance"
+                dataKey="avgDriveDistance"
                 name="Driving Distance"
                 stroke="#f97316"
                 fill="#f97316"

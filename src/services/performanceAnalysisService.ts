@@ -7,17 +7,14 @@ import ContractService from './contractService';
 export interface RoundStats {
   id: string;
   date: string;
-  course: string;
-  score: number;
-  par: number;
+  courseName: string;
+  coursePar: number;
+  totalScore: number;
+  totalFairways: number;
   fairwaysHit: number;
-  fairwaysTotal: number; 
   greensInRegulation: number;
-  putts: number;
-  drivingDistance: number | null;
-  bunkersHit: number;
-  penaltyStrokes: number;
-  holesWithPenalty: string[]; // Hole numbers with penalties
+  totalPutts: number;
+  avgDriveDistance: number;
   notes: string;
 }
 
@@ -107,49 +104,40 @@ class PerformanceAnalysisService {
       {
         id: 'round1',
         date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        course: 'Pine Valley Golf Club',
-        score: 82,
-        par: 72,
+        courseName: 'Pine Valley Golf Club',
+        coursePar: 72,
+        totalScore: 82,
+        totalFairways: 14,
         fairwaysHit: 8,
-        fairwaysTotal: 14,
         greensInRegulation: 9,
-        putts: 32,
-        drivingDistance: 245,
-        bunkersHit: 4,
-        penaltyStrokes: 2,
-        holesWithPenalty: ['7', '15'],
+        totalPutts: 32,
+        avgDriveDistance: 245,
         notes: 'Struggled with bunker shots and had difficulty on par 3s.'
       },
       {
         id: 'round2',
         date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-        course: 'Augusta National',
-        score: 85,
-        par: 72,
+        courseName: 'Augusta National',
+        coursePar: 72,
+        totalScore: 85,
+        totalFairways: 14,
         fairwaysHit: 7,
-        fairwaysTotal: 14,
         greensInRegulation: 7,
-        putts: 34,
-        drivingDistance: 240,
-        bunkersHit: 5,
-        penaltyStrokes: 3,
-        holesWithPenalty: ['5', '12', '16'],
+        totalPutts: 34,
+        avgDriveDistance: 240,
         notes: 'Windy conditions affected drives. Putting was inconsistent.'
       },
       {
         id: 'round3',
         date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-        course: 'Pebble Beach',
-        score: 79,
-        par: 72,
+        courseName: 'Pebble Beach',
+        coursePar: 72,
+        totalScore: 79,
+        totalFairways: 14,
         fairwaysHit: 10,
-        fairwaysTotal: 14,
         greensInRegulation: 11,
-        putts: 31,
-        drivingDistance: 250,
-        bunkersHit: 2,
-        penaltyStrokes: 1,
-        holesWithPenalty: ['18'],
+        totalPutts: 31,
+        avgDriveDistance: 250,
         notes: 'Best round in a while. Approach shots were very accurate.'
       }
     ];
@@ -327,8 +315,8 @@ class PerformanceAnalysisService {
       
       // Track event
       this.analyticsService.trackEvent('round_stats_added', {
-        course: stats.course,
-        score: stats.score,
+        course: stats.courseName,
+        score: stats.totalScore,
         tier
       });
       

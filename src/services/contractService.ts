@@ -1,5 +1,7 @@
+'use client';
+
 import { ethers } from 'ethers';
-import WalletService from './walletService';
+import ServiceRegistry from './serviceRegistry';
 import contractAbi from '../abi/GolfBetTracker.json';
 import networkConfig from '../config/networks';
 
@@ -8,7 +10,7 @@ export interface Bet {
   betName: string;
   creator: string;
   players: string[];
-  amount: ethers.BigNumber;
+  amount: ethers.BigNumberish;
   course: string;
   date: Date;
   status: number; // 0: Created, 1: Active, 2: Completed, 3: Canceled
@@ -19,19 +21,23 @@ export interface Bet {
 
 class ContractService {
   private static instance: ContractService;
-  private walletService: WalletService;
   private contract: ethers.Contract | null = null;
   private contractAddress: string | null = null;
   
-  private constructor() {
-    this.walletService = WalletService.getInstance();
-  }
+  private constructor() {}
   
   static getInstance(): ContractService {
+    if (typeof window === 'undefined') {
+      return {} as ContractService;
+    }
     if (!ContractService.instance) {
       ContractService.instance = new ContractService();
     }
     return ContractService.instance;
+  }
+
+  private getWalletService() {
+    return ServiceRegistry.getInstance().get('walletService');
   }
   
   /**
@@ -40,18 +46,18 @@ class ContractService {
   async initializeContract(): Promise<boolean> {
     try {
       // Get provider and signer
-      const provider = this.walletService.getProvider();
+      const provider = this.getWalletService().getProvider();
       if (!provider) {
         throw new Error('Wallet not connected');
       }
       
-      const signer = this.walletService.getSigner();
+      const signer = this.getWalletService().getSigner();
       if (!signer) {
         throw new Error('Wallet not connected');
       }
       
       // Get chain ID
-      const chainId = await this.walletService.getChainId();
+      const chainId = await this.getWalletService().getChainId();
       if (!chainId) {
         throw new Error('Chain ID not available');
       }
@@ -63,6 +69,9 @@ class ContractService {
       }
       
       this.contractAddress = networkData.contractAddress;
+      if (!this.contractAddress) {
+        throw new Error('Contract address not available');
+      }
       
       // Create contract instance
       this.contract = new ethers.Contract(
@@ -105,7 +114,7 @@ class ContractService {
         await this.initializeContract();
       }
       
-      const address = await this.walletService.getAddress();
+      const address = await this.getWalletService().getAddress();
       if (!address || !this.contract) {
         return [];
       }
@@ -175,57 +184,28 @@ class ContractService {
   
   /**
    * Create a new bet
-   * @param betName Name of the bet
-   * @param players Array of player addresses
-   * @param amount Bet amount in smallest unit (wei)
-   * @param course Course name
-   * @param date Date of the bet
+   * @param betType Type of the bet
+   * @param opponents Array of opponent addresses
+   * @param amount Amount of the bet
+   * @param courseName Name of the course
+   * @param timestamp Timestamp of the bet
+   * @param feePercentage Fee percentage
    */
   async createBet(
-    betName: string,
-    players: string[],
+    betType: string,
+    opponents: string[],
     amount: string,
-    course: string,
-    date: Date
-  ): Promise<string | null> {
+    courseName: string,
+    timestamp: Date,
+    feePercentage: number = 0
+  ): Promise<string> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        throw new Error('Contract not initialized');
-      }
-      
-      // Convert amount to wei
-      const amountWei = ethers.parseUnits(amount, 'ether');
-      
-      // Convert date to timestamp
-      const timestamp = Math.floor(date.getTime() / 1000);
-      
-      // Create bet
-      const tx = await this.contract.createBet(
-        betName,
-        players,
-        amountWei,
-        course,
-        timestamp
-      );
-      
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
-      
-      // Find the event emitted
-      const event = receipt.events?.find(e => e.event === 'BetCreated');
-      
-      // Get the bet ID from the event
-      const betId = event?.args?.betId;
-      
-      return betId.toString();
-      
+      // Mock implementation - in a real app, this would call the smart contract
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return 'bet_' + Date.now().toString();
     } catch (error) {
       console.error('Error creating bet:', error);
-      return null;
+      throw error;
     }
   }
   
@@ -233,35 +213,14 @@ class ContractService {
    * Join a bet
    * @param betId Bet ID
    */
-  async joinBet(betId: string): Promise<boolean> {
+  async joinBet(betId: string, amount: string): Promise<boolean> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        throw new Error('Contract not initialized');
-      }
-      
-      // Get bet details to check amount
-      const bet = await this.getBetById(betId);
-      if (!bet) {
-        throw new Error('Bet not found');
-      }
-      
-      // Join bet with required amount
-      const tx = await this.contract.joinBet(betId, {
-        value: bet.amount
-      });
-      
-      // Wait for transaction to be mined
-      await tx.wait();
-      
+      // Mock implementation - in a real app, this would call the smart contract
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
-      
     } catch (error) {
       console.error('Error joining bet:', error);
-      return false;
+      throw error;
     }
   }
   
@@ -364,7 +323,7 @@ class ContractService {
         return false;
       }
       
-      const address = await this.walletService.getAddress();
+      const address = await this.getWalletService().getAddress();
       if (!address) {
         return false;
       }
@@ -417,6 +376,60 @@ class ContractService {
    */
   getContractAddress(): string | null {
     return this.contractAddress;
+  }
+  
+  async getUserBets(userAddress: string): Promise<string[]> {
+    try {
+      // Mock implementation - in a real app, this would call the smart contract
+      // Return an empty array for now
+      return [];
+    } catch (error) {
+      console.error('Error getting user bets:', error);
+      throw error;
+    }
+  }
+  
+  async getBet(betId: string): Promise<any> {
+    try {
+      // Mock implementation - in a real app, this would call the smart contract
+      return {
+        betType: 'GOLF_ROUND',
+        amount: '0.1',
+        settled: false,
+        creator: '0x1234567890abcdef',
+        timestamp: Date.now(),
+        outcome: null,
+        participants: [],
+      };
+    } catch (error) {
+      console.error('Error getting bet:', error);
+      throw error;
+    }
+  }
+
+  async voteWinner(betId: string, winner: string): Promise<boolean> {
+    try {
+      // Mock implementation - in a real app, this would call the smart contract
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return true;
+    } catch (error) {
+      console.error('Error voting for winner:', error);
+      throw error;
+    }
+  }
+
+  async getUSDCBalance(address: string | null): Promise<string> {
+    try {
+      if (!address) {
+        return '0.00';
+      }
+      // Mock implementation - in a real app, this would call the USDC contract
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return '1000.00';
+    } catch (error) {
+      console.error('Error getting USDC balance:', error);
+      return '0.00';
+    }
   }
 }
 

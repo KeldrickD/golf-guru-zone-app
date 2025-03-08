@@ -93,7 +93,7 @@ const BetList: React.FC<BetListProps> = ({ refreshTrigger, betIdToShow }) => {
         setSubscriptionTier(tier);
         
         const tierDetails = subscriptionService.getTierDetails(tier);
-        setMaxActiveBets(tierDetails.maxActiveBets);
+        setMaxActiveBets(tierDetails.maxBets);
         
         // Count active bets
         const openBets = bets.filter(bet => !bet.settled).length;

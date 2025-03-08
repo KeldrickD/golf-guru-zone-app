@@ -13,9 +13,8 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   MinusIcon,
-  GolfBallIcon,
+  CircleDotIcon,
   CrosshairIcon,
-  FlagIcon,
   RulerIcon,
 } from "lucide-react"
 
@@ -111,7 +110,7 @@ const DrilldownModal: React.FC<DrilldownModalProps> = ({
           {/* Putting Stats */}
           <Card className="p-4">
             <h3 className="text-lg font-semibold mb-3 flex items-center">
-              <GolfBallIcon className="h-5 w-5 mr-2" />
+              <CircleDotIcon className="h-5 w-5 mr-2" />
               Putting
             </h3>
             <div className="space-y-2">

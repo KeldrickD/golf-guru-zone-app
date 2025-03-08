@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
@@ -11,7 +13,7 @@ import { Button } from "./ui/Button";
 import { Progress } from "./ui/Progress";
 import { Skeleton } from "./ui/Skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/Alert";
-import { RocketIcon, TrophyIcon, MedalIcon, HistoryIcon, DollarSignIcon, UsersIcon, MapPinIcon, ClockIcon, UpgradeIcon } from "lucide-react";
+import { RocketIcon, TrophyIcon, MedalIcon, HistoryIcon, DollarSignIcon, UsersIcon, MapPinIcon, ClockIcon, ArrowUpCircleIcon } from "lucide-react";
 import SubscriptionService, { SubscriptionTier } from "../services/subscriptionService";
 import AnalyticsService, { 
   PerformanceStats, 
@@ -257,8 +259,10 @@ const AnalyticsDashboard: React.FC = () => {
               </p>
             </div>
             <Button onClick={handleUpgrade} className="bg-green-600 hover:bg-green-700">
-              <UpgradeIcon className="mr-2 h-4 w-4" />
-              Upgrade Now
+              <div className="flex items-center gap-2">
+                <RocketIcon className="w-4 h-4 text-primary" />
+                <span>Upgrade to Premium</span>
+              </div>
             </Button>
           </div>
         </CardContent>
@@ -638,8 +642,10 @@ const AnalyticsDashboard: React.FC = () => {
             </div>
             <div className="mt-8 text-center">
               <Button onClick={handleUpgrade} size="lg" className="bg-green-600 hover:bg-green-700">
-                <UpgradeIcon className="mr-2 h-4 w-4" />
-                Upgrade Now
+                <div className="flex items-center gap-2">
+                  <RocketIcon className="w-4 h-4 text-primary" />
+                  <span>Upgrade to Premium</span>
+                </div>
               </Button>
             </div>
           </CardContent>
@@ -669,8 +675,10 @@ const AnalyticsDashboard: React.FC = () => {
           
           {userTier === SubscriptionTier.PREMIUM && (
             <Button onClick={handleUpgrade} variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-              <UpgradeIcon className="mr-2 h-4 w-4" />
-              Upgrade to Pro
+              <div className="flex items-center gap-2">
+                <RocketIcon className="w-4 h-4 text-primary" />
+                <span>Upgrade to Premium</span>
+              </div>
             </Button>
           )}
         </div>

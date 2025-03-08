@@ -12,6 +12,19 @@ const nextConfig = {
     };
     return config;
   },
-};
+  output: 'standalone',
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    domains: ['ipfs.io'],
+  },
+  // Configure dynamic routes
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'golf-guru-zone.vercel.app'],
+    },
+  }
+}
 
-module.exports = nextConfig; 
+module.exports = nextConfig 

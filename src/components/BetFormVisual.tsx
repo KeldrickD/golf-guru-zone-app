@@ -5,7 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { QRCodeSVG } from 'qrcode.react';
 import { colors, typography, borderRadius, shadows, transitions } from '@/styles/designSystem';
 import Card from './ui/Card';
-import Button from './ui/Button';
+import { Button } from './ui/Button';
 import WalletService from '../services/walletService';
 import SubscriptionService from '../services/subscriptionService';
 
@@ -571,7 +571,7 @@ const BetFormVisual: React.FC<BetFormVisualProps> = ({ onBetCreated }) => {
   };
   
   return (
-    <Card elevation="medium" fullWidth>
+    <Card className="w-full shadow-md">
       {/* Step indicators */}
       <StepsContainer>
         {Array.from({ length: totalSteps }).map((_, index) => (
@@ -729,11 +729,17 @@ const BetFormVisual: React.FC<BetFormVisualProps> = ({ onBetCreated }) => {
             
             <Button
               variant="outline"
-              fullWidth
+              className="w-full mt-6"
               onClick={resetForm}
-              style={{ marginTop: '1.5rem' }}
             >
               Create Another Bet
+            </Button>
+            <Button
+              variant="default"
+              type="submit"
+              className={currentStep === totalSteps ? 'w-full bg-blue-600 hover:bg-blue-700' : ''}
+            >
+              {currentStep === totalSteps ? 'Create Bet' : 'Next'}
             </Button>
           </SuccessContainer>
         )}
@@ -762,9 +768,9 @@ const BetFormVisual: React.FC<BetFormVisualProps> = ({ onBetCreated }) => {
             )}
             
             <Button
-              variant={currentStep === totalSteps ? 'gradient' : 'primary'}
+              variant="default"
               type="submit"
-              fullWidth={currentStep === totalSteps}
+              className={currentStep === totalSteps ? 'w-full bg-blue-600 hover:bg-blue-700' : ''}
             >
               {currentStep === totalSteps ? 'Create Bet' : 'Next'}
             </Button>

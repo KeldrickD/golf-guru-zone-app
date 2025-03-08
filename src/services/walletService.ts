@@ -1,7 +1,10 @@
+'use client';
+
 import { ethers } from 'ethers';
 import AnalyticsService from './analyticsService';
+import ServiceRegistry from './serviceRegistry';
 
-interface WalletInfo {
+export interface WalletInfo {
   address: string;
   chainId: number;
   isConnected: boolean;
@@ -24,9 +27,9 @@ export enum NetworkIds {
 }
 
 class WalletService {
-  private static instance: WalletService;
+  private static instance: WalletService | null = null;
   private provider: ethers.BrowserProvider | null = null;
-  private signer: ethers.Signer | null = null;
+  private signer: ethers.JsonRpcSigner | null = null;
   private walletInfo: WalletInfo | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
   private analyticsService: AnalyticsService;
@@ -42,9 +45,15 @@ class WalletService {
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       this.setupEthereumListeners();
     }
+    
+    // Register this instance
+    ServiceRegistry.getInstance().register('walletService', this);
   }
   
   static getInstance(): WalletService {
+    if (typeof window === 'undefined') {
+      return {} as WalletService;
+    }
     if (!WalletService.instance) {
       WalletService.instance = new WalletService();
     }
@@ -156,7 +165,7 @@ class WalletService {
   /**
    * Get current signer
    */
-  getSigner(): ethers.Signer | null {
+  getSigner(): ethers.JsonRpcSigner | null {
     return this.signer;
   }
   

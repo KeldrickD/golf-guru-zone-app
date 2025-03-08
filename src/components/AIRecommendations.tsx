@@ -11,7 +11,7 @@ import { Button } from "./ui/Button";
 import { Progress } from "./ui/Progress";
 import { Skeleton } from "./ui/Skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/Alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
 
 import {
   Trophy,

@@ -136,8 +136,11 @@ const BetForm: React.FC<BetFormProps> = ({ onBetCreated }) => {
       // Create bet on blockchain
       const newBetId = await contractService.createBet(
         betType,
+        validPlayers,
         amount,
-        validPlayers
+        'Default Course', // TODO: Add course selection
+        new Date(),
+        feePercentage
       );
 
       // Generate QR code value

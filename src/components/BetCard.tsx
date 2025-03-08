@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { colors, typography, borderRadius, shadows, transitions } from '@/styles/designSystem';
-import Card from './ui/Card';
-import Button from './ui/Button';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 export interface BetCardProps {
   id: string;
@@ -302,47 +302,36 @@ const BetCard: React.FC<BetCardProps> = ({
     joinedPlayers.includes(currentUserAddress);
   
   return (
-    <Card
-      elevation="medium"
-      hoverEffect
-      borderHighlight={status === 'joined'}
-      interaction="hover"
-      fullWidth
-    >
-      <BetHeader>
-        <BetTypeIcon $type={type} />
-        <BetInfo>
-          <BetTitle>{type} Bet</BetTitle>
-          <BetDetails>
-            <BetAmount>{amount} USDC</BetAmount>
-            <BetDate>{formattedDate}</BetDate>
-          </BetDetails>
-        </BetInfo>
-        <StatusBadge $status={status}>
-          {status}
-        </StatusBadge>
-      </BetHeader>
-      
-      <PlayerSection>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: typography.fontSize.sm, color: colors.text.secondary }}>
-            {joinedPlayers.length}/{players.length} Players Joined
-          </div>
-          {players.length > 5 && (
-            <button 
-              onClick={() => setExpanded(!expanded)}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                fontSize: typography.fontSize.sm, 
-                color: colors.primary.main,
-                cursor: 'pointer'
-              }}
-            >
-              {expanded ? 'Show Less' : 'Show All'}
-            </button>
-          )}
+    <Card className="p-4">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="text-lg font-semibold">{type} Bet</h3>
+          <p className="text-sm text-muted-foreground">
+            {formattedDate}
+          </p>
         </div>
+        <div className="text-right">
+          <div className="text-lg font-semibold">{amount} USDC</div>
+          <span className={`text-sm ${status === 'settled' ? 'text-green-500' : 'text-muted-foreground'}`}>
+            {status}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-sm">
+          <span className="text-muted-foreground">Participants: </span>
+          {joinedPlayers.length}/{players.length} Players Joined
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-2">
+        <Button variant="outline" size="sm" className="flex-1" onClick={() => setExpanded(!expanded)}>
+          {expanded ? 'Show Less' : 'Show All'}
+        </Button>
+      </div>
+
+      <PlayerSection>
         <PlayerList>
           {(expanded ? players : players.slice(0, 5)).map((player, index) => {
             const isJoined = joinedPlayers.includes(player);
@@ -381,11 +370,11 @@ const BetCard: React.FC<BetCardProps> = ({
             ))}
           </VotePlayerList>
           <Button 
-            variant="primary" 
-            fullWidth 
+            variant="default" 
+            size="sm" 
+            className="flex-1"
             onClick={handleVote}
             disabled={!selectedWinner}
-            style={{ marginTop: '1rem' }}
           >
             Submit Vote
           </Button>
@@ -393,17 +382,11 @@ const BetCard: React.FC<BetCardProps> = ({
       )}
       
       {status === 'settled' && winner && (
-        <div style={{ 
-          marginTop: '1rem', 
-          padding: '0.75rem', 
-          backgroundColor: 'rgba(52, 199, 89, 0.1)',
-          borderRadius: borderRadius.lg,
-          fontSize: typography.fontSize.sm
-        }}>
-          <div style={{ fontWeight: typography.fontWeight.medium }}>
+        <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+          <div className="font-semibold">
             Winner: {winner === currentUserAddress ? 'You' : truncateAddress(winner)}
           </div>
-          <div style={{ marginTop: '0.25rem' }}>
+          <div className="mt-2">
             Payout: {amount} USDC × {joinedPlayers.length} players
           </div>
         </div>
@@ -412,9 +395,9 @@ const BetCard: React.FC<BetCardProps> = ({
       {canJoin && (
         <ActionsContainer>
           <Button 
-            variant="gradient" 
-            size="medium" 
-            fullWidth
+            variant="default" 
+            size="default" 
+            className="flex-1"
             onClick={handleJoin}
           >
             Join Bet

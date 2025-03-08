@@ -330,6 +330,27 @@ class SubscriptionService {
     
     return plan.features.maxBets;
   }
+
+  async getTransactionFeePercentage(): Promise<number> {
+    const tier = await this.getUserTier();
+    switch (tier) {
+      case SubscriptionTier.PRO:
+        return 1.0;
+      case SubscriptionTier.PREMIUM:
+        return 2.0;
+      default:
+        return 3.0;
+    }
+  }
+
+  getTierDetails(tier: SubscriptionTier): TierFeatures {
+    const plan = this.plans.find(p => p.tier === tier);
+    if (!plan) {
+      // Return free tier features as default
+      return this.plans[0].features;
+    }
+    return plan.features;
+  }
 }
 
 export default SubscriptionService; 

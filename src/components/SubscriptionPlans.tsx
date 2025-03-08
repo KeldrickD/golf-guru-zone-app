@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import SubscriptionService, { SubscriptionTier } from '../services/subscriptionService';
+import { useEffect, useState } from 'react';
+import SubscriptionService, { SubscriptionTier, SubscriptionPlan } from '../services/subscriptionService';
 import WalletService from '../services/walletService';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
+import { Check } from 'lucide-react';
 
-const SubscriptionPlans = () => {
+interface SubscriptionPlansProps {
+  onUpgrade?: () => void;
+}
+
+export function SubscriptionPlans({ onUpgrade }: SubscriptionPlansProps) {
   const [currentTier, setCurrentTier] = useState<SubscriptionTier>(SubscriptionTier.FREE);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const subscriptionService = SubscriptionService.getInstance();
   const walletService = WalletService.getInstance();
-  const tiers = subscriptionService.getAllTiers();
+  const plans = subscriptionService.plans;
 
   useEffect(() => {
     const checkConnection = async () => {
       const connected = await walletService.isConnected();
-      setIsConnected(connected);
-
+      setIsWalletConnected(connected);
       if (connected) {
         const tier = await subscriptionService.getUserTier();
         setCurrentTier(tier);
@@ -27,136 +29,71 @@ const SubscriptionPlans = () => {
     };
 
     checkConnection();
-
-    window.addEventListener('walletConnected', () => {
-      setIsConnected(true);
-      checkConnection();
-    });
-
-    window.addEventListener('walletDisconnected', () => {
-      setIsConnected(false);
-      setCurrentTier(SubscriptionTier.FREE);
-    });
-
-    return () => {
-      window.removeEventListener('walletConnected', () => setIsConnected(true));
-      window.removeEventListener('walletDisconnected', () => setIsConnected(false));
-    };
   }, []);
 
-  const handleSubscribe = async (tier: SubscriptionTier) => {
-    if (tier === currentTier) {
-      setError('You are already subscribed to this plan');
-      setTimeout(() => setError(null), 3000);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
+  const handleUpgrade = async (plan: SubscriptionPlan) => {
     try {
-      const success = await subscriptionService.subscribe(tier);
-      
-      if (success) {
-        setCurrentTier(tier);
-        setSuccess(`Successfully subscribed to ${tiers[tier].name} plan!`);
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError('Failed to process subscription. Please try again.');
+      await subscriptionService.upgradeTier(plan.tier);
+      setCurrentTier(plan.tier);
+      if (onUpgrade) {
+        onUpgrade();
       }
-    } catch (err) {
-      console.error('Subscription error:', err);
-      setError('An error occurred while processing your subscription');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
     }
   };
 
-  if (!isConnected) {
-    return (
-      <div className="bg-white shadow-md rounded-lg p-6 text-center">
-        <h2 className="text-2xl font-bold text-green-800 mb-4">Subscription Plans</h2>
-        <p className="text-gray-600 mb-4">Please connect your wallet to view and subscribe to plans.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-green-800 mb-4">Subscription Plans</h2>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
-      
-      {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-700">{success}</p>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {Object.entries(tiers).map(([tierKey, tierDetails]) => {
-          const tier = tierKey as SubscriptionTier;
-          const isCurrentPlan = tier === currentTier;
-          
-          return (
-            <div 
-              key={tier} 
-              className={`border rounded-lg p-4 flex flex-col ${
-                isCurrentPlan 
-                  ? 'border-green-500 bg-green-50' 
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <div className="flex-grow">
-                <h3 className="text-xl font-bold mb-2">{tierDetails.name}</h3>
-                <p className="text-2xl font-bold text-green-700 mb-4">
-                  ${tierDetails.price.toFixed(2)}<span className="text-sm text-gray-500">/month</span>
-                </p>
-                
-                <ul className="space-y-2 mb-4">
-                  {tierDetails.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <button
-                onClick={() => handleSubscribe(tier)}
-                disabled={loading || isCurrentPlan}
-                className={`w-full py-2 px-4 rounded-md font-medium transition ${
-                  isCurrentPlan
-                    ? 'bg-green-700 text-white cursor-default'
-                    : loading
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-green-600 text-white hover:bg-green-700'
-                }`}
-              >
-                {isCurrentPlan 
-                  ? 'Current Plan' 
-                  : loading 
-                    ? 'Processing...' 
-                    : 'Subscribe'}
-              </button>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {plans.map((plan) => (
+        <Card key={plan.id} className={`relative ${currentTier === plan.tier ? 'border-2 border-primary' : ''}`}>
+          {currentTier === plan.tier && (
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                Current Plan
+              </span>
             </div>
-          );
-        })}
-      </div>
-      
-      <p className="mt-4 text-sm text-gray-500 italic">
-        Note: Subscription payments are processed via Stripe. You can cancel anytime.
-      </p>
+          )}
+          <CardHeader>
+            <CardTitle className="flex justify-between items-baseline">
+              <span>{plan.name}</span>
+              <span className="text-2xl font-bold">
+                ${plan.price}
+                <span className="text-sm font-normal text-muted-foreground">/mo</span>
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+            <ul className="space-y-2 mb-6">
+              {Object.entries(plan.features).map(([key, value]) => (
+                <li key={key} className="flex items-center">
+                  {value ? (
+                    <Check className="h-4 w-4 text-green-500 mr-2" />
+                  ) : (
+                    <span className="h-4 w-4 text-gray-300 mr-2">-</span>
+                  )}
+                  <span className="text-sm">
+                    {key === 'maxBets' ? `${value} active bets` : key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <Button
+              className="w-full"
+              variant={currentTier === plan.tier ? 'outline' : 'default'}
+              disabled={!isWalletConnected || currentTier === plan.tier}
+              onClick={() => handleUpgrade(plan)}
+            >
+              {!isWalletConnected
+                ? 'Connect Wallet'
+                : currentTier === plan.tier
+                ? 'Current Plan'
+                : `Upgrade to ${plan.name}`}
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
-};
-
-export default SubscriptionPlans; 
+} 

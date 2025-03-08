@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import WalletService from '../services/walletService';
+import { Button } from './ui/Button';
+import WalletService, { WalletInfo } from '../services/walletService';
 import ContractService from '../services/contractService';
 
-const WalletConnectButton = () => {
+export function WalletConnectButton() {
   const [address, setAddress] = useState<string | null>(null);
-  const [balance, setBalance] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string>('0.00');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,16 +15,19 @@ const WalletConnectButton = () => {
   const contractService = ContractService.getInstance();
 
   useEffect(() => {
+    const checkConnection = async () => {
+      const isConnected = await walletService.isConnected();
+      if (isConnected) {
+        const addr = await walletService.getAddress();
+        setAddress(addr);
+        if (addr) {
+          updateBalance(addr);
+        }
+      }
+    };
+
     checkConnection();
   }, []);
-
-  const checkConnection = async () => {
-    const currentAddress = await walletService.getAddress();
-    if (currentAddress) {
-      setAddress(currentAddress);
-      await updateBalance(currentAddress);
-    }
-  };
 
   const updateBalance = async (addr: string) => {
     try {
@@ -31,6 +35,7 @@ const WalletConnectButton = () => {
       setBalance(usdcBalance);
     } catch (error) {
       console.error('Error fetching balance:', error);
+      setError('Failed to fetch balance');
     }
   };
 
@@ -39,16 +44,18 @@ const WalletConnectButton = () => {
     setError(null);
 
     try {
-      const addr = await walletService.connect();
-      setAddress(addr);
-      
-      // Initialize contract service after wallet connection
-      await contractService.initialize();
-      
-      // Get USDC balance
-      await updateBalance(addr);
-    } catch (error) {
-      console.error('Connection error:', error);
+      const walletInfo = await walletService.connect();
+      if (walletInfo && walletInfo.address) {
+        setAddress(walletInfo.address);
+        
+        // Initialize contract service after wallet connection
+        await contractService.initializeContract();
+        
+        // Update USDC balance
+        updateBalance(walletInfo.address);
+      }
+    } catch (err) {
+      console.error('Connection error:', err);
       setError('Failed to connect wallet');
     } finally {
       setLoading(false);
@@ -59,9 +66,10 @@ const WalletConnectButton = () => {
     try {
       await walletService.disconnect();
       setAddress(null);
-      setBalance(null);
-    } catch (error) {
-      console.error('Disconnect error:', error);
+      setBalance('0.00');
+    } catch (err) {
+      console.error('Disconnection error:', err);
+      setError('Failed to disconnect wallet');
     }
   };
 
@@ -69,41 +77,38 @@ const WalletConnectButton = () => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
 
+  if (error) {
+    return (
+      <div className="flex items-center space-x-2">
+        <Button variant="destructive" onClick={() => setError(null)}>
+          {error}
+        </Button>
+      </div>
+    );
+  }
+
   if (address) {
     return (
-      <div className="flex items-center space-x-4">
-        <div className="text-sm">
-          <p className="text-gray-600">Connected:</p>
-          <p className="font-mono">{formatAddress(address)}</p>
-        </div>
-        {balance && (
-          <div className="text-sm">
-            <p className="text-gray-600">Balance:</p>
-            <p className="font-medium">{parseFloat(balance).toFixed(2)} USDC</p>
-          </div>
-        )}
-        <button
-          onClick={handleDisconnect}
-          className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md text-sm transition-colors"
-        >
+      <div className="flex items-center space-x-2">
+        <span className="text-sm text-muted-foreground">
+          {formatAddress(address)}
+        </span>
+        <span className="text-sm font-medium">
+          {balance} USDC
+        </span>
+        <Button variant="outline" size="sm" onClick={handleDisconnect}>
           Disconnect
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <button
+    <Button
       onClick={handleConnect}
       disabled={loading}
-      className={`bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors ${
-        loading ? 'opacity-50 cursor-not-allowed' : ''
-      }`}
     >
       {loading ? 'Connecting...' : 'Connect Wallet'}
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-    </button>
+    </Button>
   );
-};
-
-export default WalletConnectButton; 
+} 

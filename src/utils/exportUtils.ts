@@ -1,4 +1,79 @@
-import { RoundStats, PerformanceAnalysis, PracticePlan } from "@/services/performanceAnalysisService";
+import { RoundStats } from '@/services/performanceAnalysisService';
+import { PracticePlan } from '@/services/performanceAnalysisService';
+
+export const exportRoundStats = (roundStats: RoundStats[]): void => {
+  const csvContent = convertToCSV(roundStats);
+  downloadCSV(csvContent, 'golf_round_stats.csv');
+};
+
+export const exportPracticePlan = (plan: PracticePlan): void => {
+  const content = `
+Practice Plan: ${plan.title}
+
+Description: ${plan.description}
+Focus Area: ${plan.focusArea}
+Expected Timeframe: ${plan.expectedTimeframe}
+
+Goals:
+${plan.goals.map(goal => `- ${goal}`).join('\n')}
+
+Drills:
+${plan.drills.map(drill => `
+- ${drill.name}
+  Duration: ${drill.duration}
+  Description: ${drill.description}
+  ${drill.videoUrl ? `Video: ${drill.videoUrl}` : ''}`).join('\n')}
+`;
+
+  downloadTXT(content.trim(), `practice_plan_${plan.id}.txt`);
+};
+
+const convertToCSV = (roundStats: RoundStats[]): string => {
+  const headers = [
+    'Date',
+    'Course',
+    'Score',
+    'Par',
+    'Fairways Hit',
+    'GIR',
+    'Putts',
+    'Driving Distance'
+  ].join(',');
+
+  const data = roundStats.map(round => ({
+    Date: new Date(round.date).toLocaleDateString(),
+    Course: round.courseName,
+    Score: round.totalScore,
+    Par: round.coursePar,
+    'Fairways Hit': `${round.fairwaysHit}/${round.totalFairways}`,
+    'GIR': round.greensInRegulation,
+    'Putts': round.totalPutts,
+    'Driving Distance': round.avgDriveDistance
+  }));
+
+  const rows = data.map(obj => Object.values(obj).join(','));
+  return [headers, ...rows].join('\n');
+};
+
+const downloadCSV = (content: string, filename: string): void => {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const downloadTXT = (content: string, filename: string): void => {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 export function exportToCSV(data: any[], filename: string) {
   // Convert data to CSV format
@@ -17,48 +92,6 @@ export function exportToCSV(data: any[], filename: string) {
   document.body.removeChild(link);
 }
 
-export function exportRoundStats(roundStats: RoundStats[]) {
-  const data = roundStats.map(round => ({
-    Date: new Date(round.date).toLocaleDateString(),
-    Course: round.course,
-    Score: round.score,
-    Par: round.par,
-    'Fairways Hit': `${round.fairwaysHit}/${round.fairwaysTotal}`,
-    'Fairway %': ((round.fairwaysHit / round.fairwaysTotal) * 100).toFixed(1),
-    'Greens in Regulation': round.greensInRegulation,
-    'GIR %': ((round.greensInRegulation / 18) * 100).toFixed(1),
-    Putts: round.putts,
-    'Driving Distance': round.drivingDistance || 'N/A',
-    'Bunkers Hit': round.bunkersHit,
-    'Penalty Strokes': round.penaltyStrokes,
-    Notes: round.notes
-  }));
-  
-  exportToCSV(data, 'golf-round-stats.csv');
-}
-
-export function exportPracticePlan(plan: PracticePlan) {
-  const data = [
-    {
-      Title: plan.title,
-      Description: plan.description,
-      'Focus Area': plan.focusArea,
-      'Expected Timeframe': plan.expectedTimeframe
-    },
-    { Title: 'Drills:' },
-    ...plan.drills.map(drill => ({
-      Name: drill.name,
-      Description: drill.description,
-      Duration: drill.duration,
-      'Video URL': drill.videoUrl || 'N/A'
-    })),
-    { Title: 'Goals:' },
-    ...plan.goals.map(goal => ({ Goal: goal }))
-  ];
-  
-  exportToCSV(data, `practice-plan-${plan.id}.csv`);
-}
-
 export function generatePracticePlanPDF(plan: PracticePlan): string {
   // This would typically use a PDF generation library
   // For now, we'll return a data URL that could be used for sharing
@@ -72,29 +105,4 @@ export function generatePracticePlanPDF(plan: PracticePlan): string {
   };
   
   return `data:text/plain;base64,${btoa(JSON.stringify(planData))}`;
-}
-
-function convertToCSV(data: any[]): string {
-  if (data.length === 0) return '';
-  
-  // Get headers
-  const headers = Object.keys(data[0]);
-  
-  // Create CSV rows
-  const rows = [
-    headers.join(','), // Header row
-    ...data.map(row => 
-      headers.map(header => {
-        const value = row[header];
-        // Handle values that need quotes (contains comma, newline, or quotes)
-        const stringValue = String(value);
-        if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
-          return `"${stringValue.replace(/"/g, '""')}"`;
-        }
-        return stringValue;
-      }).join(',')
-    )
-  ];
-  
-  return rows.join('\n');
 } 
