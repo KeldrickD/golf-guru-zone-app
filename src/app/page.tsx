@@ -1,28 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { Book, BrainCircuit, History } from 'lucide-react';
+import { BarChart, Book, ShoppingBag, Map } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 const features = [
   {
+    icon: BarChart,
+    title: 'Performance Analysis',
+    description: 'Get AI-powered insights to improve your golf game based on your round statistics.',
+    href: '/analytics',
+  },
+  {
     icon: Book,
-    title: 'Golf Rules Assistant',
+    title: 'Rules Assistant',
     description: 'Get instant answers to your golf rules questions from our AI-powered assistant.',
     href: '/rules',
   },
   {
-    icon: BrainCircuit,
-    title: 'AI Betting Recommendations',
-    description: 'Receive personalized betting recommendations based on historical data and current conditions.',
-    href: '/recommendations',
+    icon: ShoppingBag,
+    title: 'Equipment Recommender',
+    description: 'Receive personalized golf equipment recommendations based on your playing style.',
+    href: '/equipment',
   },
   {
-    icon: History,
-    title: 'Performance History',
-    description: 'Track your betting performance and view detailed analytics of your past bets.',
-    href: '/recommendation-history',
+    icon: Map,
+    title: 'Course Discovery',
+    description: 'Find the perfect golf courses for your skill level and preferences.',
+    href: '/courses',
   },
 ];
 
@@ -33,11 +39,18 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center mb-4">
           Welcome to Golf Guru Zone
         </h1>
-        <p className="text-xl text-center text-muted-foreground mb-12">
-          Your AI-powered golf betting companion
+        <p className="text-xl text-center text-muted-foreground mb-4">
+          Your AI-powered golf improvement companion
+        </p>
+        <p className="text-center mb-12">
+          <Link href="/pricing">
+            <Button variant="outline" className="mx-2">
+              View Pricing
+            </Button>
+          </Link>
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {features.map((feature) => (
             <Card key={feature.title} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -55,14 +68,14 @@ export default function Home() {
         </div>
 
         <div className="text-center">
-          <Link href="/rules">
+          <Link href="/analytics">
             <Button size="lg" className="mr-4">
-              Try Rules Assistant
+              Analyze Your Game
             </Button>
           </Link>
-          <Link href="/recommendations">
+          <Link href="/rules">
             <Button size="lg" variant="outline">
-              View Recommendations
+              Check Rules
             </Button>
           </Link>
         </div>
