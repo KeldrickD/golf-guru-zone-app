@@ -13,33 +13,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  stripeCustomerId String?
-  subscription   Subscription?
-  accounts      Account[]
-  sessions      Session[]
-}
-
+// NextAuth Models
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token          String?  @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -54,6 +41,22 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  rounds        Round[]
+  handicap      Float?
+  homeClub      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  goals         UserGoal[]
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -62,31 +65,75 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Subscription {
-  id                 String    @id @default(cuid())
-  userId            String    @unique
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stripeSubscriptionId String  @unique
-  stripePriceId     String
-  stripeCurrentPeriodEnd DateTime
-  stripeCustomerId  String
-  status            String    @default("inactive")
-  plan              String
-  cancelAtPeriodEnd Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+// Golf-specific Models
+model Course {
+  id          String  @id @default(cuid())
+  name        String
+  location    String
+  holeCount   Int     @default(18)
+  par         Int     @default(72)
+  rating      Float?
+  slope       Float?
+  description String? @db.Text
+  imageUrl    String?
+  rounds      Round[]
 }
 
-model UsageStats {
-  id                String    @id @default(cuid())
-  userId            String
-  roundsAnalyzed    Int       @default(0)
-  aiCoachingSessions Int      @default(0)
-  equipmentRecommendations Int @default(0)
-  periodStart       DateTime
-  periodEnd         DateTime
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+model Round {
+  id                 String   @id @default(cuid())
+  date               DateTime
+  totalScore         Int
+  putts              Int?
+  fairwaysHit        Int?
+  totalFairways      Int?
+  greensInRegulation Int?
+  totalGreens        Int?
+  notes              String?  @db.Text
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId           String?
+  course             Course?  @relation(fields: [courseId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  shots              Shot[]
+}
 
-  @@unique([userId, periodStart, periodEnd])
+model Shot {
+  id      String  @id @default(cuid())
+  roundId String
+  round   Round   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  holeNum Int
+  club    String?
+  distance Int?
+  result  String? // "fairway", "green", "bunker", "rough", etc.
+  notes   String? @db.Text
+}
+
+model ClubDistance {
+  id         String @id @default(cuid())
+  userId     String
+  club       String
+  avgDistance Int
+  minDistance Int?
+  maxDistance Int?
+  shotCount   Int   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, club])
+}
+
+model UserGoal {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         String   // "handicap", "score", "fairways", "gir", "putts", etc.
+  targetValue  Float
+  startValue   Float?
+  deadline     DateTime?
+  isCompleted  Boolean  @default(false)
+  progress     Float?   // Percentage towards goal
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

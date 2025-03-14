@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { Target, Map } from 'lucide-react';
+import useSWR from 'swr';
 
 // Define hole data type
 interface HoleData {
@@ -25,136 +26,8 @@ interface HoleData {
   };
 }
 
-// Sample hole data with miss patterns
-const holeData: HoleData[] = [
-  {
-    hole: 1,
-    par: 4,
-    length: 385,
-    fairwayMisses: { left: 40, right: 15, center: 45 }, // Percentages
-    greenMisses: { short: 35, long: 10, left: 25, right: 20, hit: 10 }, // Percentages
-  },
-  {
-    hole: 2,
-    par: 3,
-    length: 175,
-    fairwayMisses: { left: 0, right: 0, center: 100 }, // Par 3 has no fairway
-    greenMisses: { short: 40, long: 15, left: 15, right: 10, hit: 20 },
-  },
-  {
-    hole: 3,
-    par: 5,
-    length: 520,
-    fairwayMisses: { left: 30, right: 30, center: 40 },
-    greenMisses: { short: 45, long: 5, left: 15, right: 15, hit: 20 },
-  },
-  {
-    hole: 4,
-    par: 4,
-    length: 410,
-    fairwayMisses: { left: 20, right: 35, center: 45 },
-    greenMisses: { short: 30, long: 15, left: 20, right: 15, hit: 20 },
-  },
-  {
-    hole: 5,
-    par: 4,
-    length: 405,
-    fairwayMisses: { left: 10, right: 50, center: 40 },
-    greenMisses: { short: 25, long: 20, left: 15, right: 25, hit: 15 },
-  },
-  {
-    hole: 6,
-    par: 3,
-    length: 195,
-    fairwayMisses: { left: 0, right: 0, center: 100 }, // Par 3 has no fairway
-    greenMisses: { short: 50, long: 10, left: 15, right: 10, hit: 15 },
-  },
-  {
-    hole: 7,
-    par: 4,
-    length: 380,
-    fairwayMisses: { left: 35, right: 25, center: 40 },
-    greenMisses: { short: 30, long: 20, left: 15, right: 15, hit: 20 },
-  },
-  {
-    hole: 8,
-    par: 5,
-    length: 535,
-    fairwayMisses: { left: 25, right: 35, center: 40 },
-    greenMisses: { short: 40, long: 10, left: 20, right: 10, hit: 20 },
-  },
-  {
-    hole: 9,
-    par: 4,
-    length: 395,
-    fairwayMisses: { left: 35, right: 20, center: 45 },
-    greenMisses: { short: 25, long: 15, left: 30, right: 15, hit: 15 },
-  },
-  // Back 9
-  {
-    hole: 10,
-    par: 4,
-    length: 400,
-    fairwayMisses: { left: 30, right: 25, center: 45 },
-    greenMisses: { short: 30, long: 15, left: 20, right: 20, hit: 15 },
-  },
-  {
-    hole: 11,
-    par: 5,
-    length: 540,
-    fairwayMisses: { left: 25, right: 35, center: 40 },
-    greenMisses: { short: 35, long: 10, left: 25, right: 10, hit: 20 },
-  },
-  {
-    hole: 12,
-    par: 3,
-    length: 185,
-    fairwayMisses: { left: 0, right: 0, center: 100 }, // Par 3 has no fairway
-    greenMisses: { short: 45, long: 10, left: 20, right: 10, hit: 15 },
-  },
-  {
-    hole: 13,
-    par: 4,
-    length: 415,
-    fairwayMisses: { left: 40, right: 20, center: 40 },
-    greenMisses: { short: 30, long: 15, left: 25, right: 15, hit: 15 },
-  },
-  {
-    hole: 14,
-    par: 4,
-    length: 420,
-    fairwayMisses: { left: 15, right: 45, center: 40 },
-    greenMisses: { short: 25, long: 20, left: 15, right: 25, hit: 15 },
-  },
-  {
-    hole: 15,
-    par: 3,
-    length: 165,
-    fairwayMisses: { left: 0, right: 0, center: 100 }, // Par 3 has no fairway
-    greenMisses: { short: 40, long: 15, left: 20, right: 10, hit: 15 },
-  },
-  {
-    hole: 16,
-    par: 5,
-    length: 525,
-    fairwayMisses: { left: 20, right: 40, center: 40 },
-    greenMisses: { short: 35, long: 10, left: 20, right: 15, hit: 20 },
-  },
-  {
-    hole: 17,
-    par: 4,
-    length: 390,
-    fairwayMisses: { left: 30, right: 25, center: 45 },
-    greenMisses: { short: 30, long: 10, left: 25, right: 15, hit: 20 },
-  },
-  {
-    hole: 18,
-    par: 4,
-    length: 430,
-    fairwayMisses: { left: 35, right: 20, center: 45 },
-    greenMisses: { short: 25, long: 15, left: 30, right: 15, hit: 15 },
-  },
-];
+// API fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const generateHeatmapColorClass = (percentage: number) => {
   if (percentage >= 50) return 'bg-red-500';
@@ -307,7 +180,15 @@ const FairwayHeatmap = ({ holeData, activeHole }: { holeData: HoleData[], active
 export default function CourseHeatmapChart({ className }: CourseHeatmapChartProps) {
   const [activeHole, setActiveHole] = useState<number>(1);
   const [activeView, setActiveView] = useState<'green' | 'fairway'>('green');
+  
+  // Fetch heatmap data
+  const { data, error, isLoading } = useSWR('/api/stats?chart=heatmap', fetcher);
+  
+  // Use heatmap data from API or empty array if not available
+  const holeData: HoleData[] = data?.holeData || [];
   const currentHole = holeData.find(h => h.hole === activeHole) || holeData[0];
+  
+  const hasNoData = isLoading || error || holeData.length === 0;
   
   return (
     <Card className={`shadow-md border-gray-100 dark:border-gray-800 overflow-hidden ${className}`}>
@@ -346,124 +227,165 @@ export default function CourseHeatmapChart({ className }: CourseHeatmapChartProp
           Visualize your tendencies to miss fairways and greens
         </CardDescription>
         
-        <div className="mt-3 grid grid-cols-5 sm:grid-cols-9 gap-1 text-xs">
-          {holeData.slice(0, 9).map((hole) => (
-            <Button
-              key={`front-${hole.hole}`}
-              variant={activeHole === hole.hole ? 'default' : 'outline'}
-              className="h-8 w-8 p-0 text-xs"
-              onClick={() => setActiveHole(hole.hole)}
-            >
-              {hole.hole}
-            </Button>
-          ))}
-        </div>
-        <div className="mt-1 grid grid-cols-5 sm:grid-cols-9 gap-1 text-xs">
-          {holeData.slice(9).map((hole) => (
-            <Button
-              key={`back-${hole.hole}`}
-              variant={activeHole === hole.hole ? 'default' : 'outline'}
-              className="h-8 w-8 p-0 text-xs"
-              onClick={() => setActiveHole(hole.hole)}
-            >
-              {hole.hole}
-            </Button>
-          ))}
-        </div>
-        
-        <div className="mt-4 flex items-center justify-center">
-          <div className="flex items-center gap-4">
-            <div className="text-center">
-              <span className="text-xs text-gray-500">Hole</span>
-              <p className="text-xl font-bold">{currentHole.hole}</p>
+        {!hasNoData && (
+          <>
+            <div className="mt-3 grid grid-cols-5 sm:grid-cols-9 gap-1 text-xs">
+              {holeData.slice(0, 9).map((hole) => (
+                <Button
+                  key={`front-${hole.hole}`}
+                  variant={activeHole === hole.hole ? 'default' : 'outline'}
+                  className="h-8 w-8 p-0 text-xs"
+                  onClick={() => setActiveHole(hole.hole)}
+                >
+                  {hole.hole}
+                </Button>
+              ))}
             </div>
-            <div className="text-center">
-              <span className="text-xs text-gray-500">Par</span>
-              <p className="text-xl font-bold">{currentHole.par}</p>
+            <div className="mt-1 grid grid-cols-5 sm:grid-cols-9 gap-1 text-xs">
+              {holeData.slice(9).map((hole) => (
+                <Button
+                  key={`back-${hole.hole}`}
+                  variant={activeHole === hole.hole ? 'default' : 'outline'}
+                  className="h-8 w-8 p-0 text-xs"
+                  onClick={() => setActiveHole(hole.hole)}
+                >
+                  {hole.hole}
+                </Button>
+              ))}
             </div>
-            <div className="text-center">
-              <span className="text-xs text-gray-500">Length</span>
-              <p className="text-xl font-bold">{currentHole.length} <span className="text-xs">yd</span></p>
+            
+            <div className="mt-4 flex items-center justify-center">
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <span className="text-xs text-gray-500">Hole</span>
+                  <p className="text-xl font-bold">{currentHole.hole}</p>
+                </div>
+                <div className="text-center">
+                  <span className="text-xs text-gray-500">Par</span>
+                  <p className="text-xl font-bold">{currentHole.par}</p>
+                </div>
+                <div className="text-center">
+                  <span className="text-xs text-gray-500">Length</span>
+                  <p className="text-xl font-bold">{currentHole.length} <span className="text-xs">yd</span></p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </CardHeader>
       
       <CardContent className="p-4 sm:p-6">
-        <div className="flex flex-col items-center">
-          {activeView === 'green' ? (
-            <>
-              <GreenHeatmap holeData={holeData} activeHole={activeHole} />
-              <div className="mt-6 text-sm text-center max-w-md mx-auto">
-                {currentHole.greenMisses.hit < 20 ? (
-                  <p className="text-red-500 dark:text-red-400 font-medium">
-                    You're only hitting this green {currentHole.greenMisses.hit}% of the time. Try focusing on your approach shots.
-                  </p>
-                ) : (
-                  <p className="text-gray-600 dark:text-gray-300">
-                    You tend to miss this green {(() => {
-                      const misses = currentHole.greenMisses;
-                      const maxMiss = Math.max(misses.short, misses.long, misses.left, misses.right);
-                      if (maxMiss === misses.short) return 'short';
-                      if (maxMiss === misses.long) return 'long';
-                      if (maxMiss === misses.left) return 'to the left';
-                      return 'to the right';
-                    })()} most frequently.
-                  </p>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <FairwayHeatmap holeData={holeData} activeHole={activeHole} />
-              <div className="mt-6 text-sm text-center max-w-md mx-auto">
-                {currentHole.par === 3 ? (
-                  <p className="text-gray-600 dark:text-gray-300">
-                    This is a par 3 hole. Focus on your tee shot accuracy to hit the green.
-                  </p>
-                ) : currentHole.fairwayMisses.center < 50 ? (
-                  <p className="text-amber-500 dark:text-amber-400 font-medium">
-                    You're only hitting this fairway {currentHole.fairwayMisses.center}% of the time. Consider using a more accurate club off the tee.
-                  </p>
-                ) : (
-                  <p className="text-gray-600 dark:text-gray-300">
-                    You have a tendency to miss this fairway {currentHole.fairwayMisses.left > currentHole.fairwayMisses.right ? 'to the left' : 'to the right'}.
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-          
-          <div className="mt-8 w-full">
-            <div className="text-xs text-gray-500 mb-2">Color legend (miss frequency)</div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-200 rounded"></div>
-                <span className="text-xs">Low</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-300 rounded"></div>
-                <span className="text-xs">10%+</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-yellow-400 rounded"></div>
-                <span className="text-xs">20%+</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-orange-400 rounded"></div>
-                <span className="text-xs">30%+</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-400 rounded"></div>
-                <span className="text-xs">40%+</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-500 rounded"></div>
-                <span className="text-xs">50%+</span>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-60">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10">
+            <p className="text-red-500 dark:text-red-400">Error loading shot pattern data</p>
+            <Button 
+              onClick={() => window.location.reload()}
+              variant="outline"
+              size="sm"
+              className="mt-2"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : holeData.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-gray-500 dark:text-gray-400">No shot pattern data available</p>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="mt-2"
+            >
+              Add Shot Data
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            {activeView === 'green' ? (
+              <>
+                <GreenHeatmap holeData={holeData} activeHole={activeHole} />
+                <div className="mt-6 text-sm text-center max-w-md mx-auto">
+                  {currentHole.greenMisses.hit < 20 ? (
+                    <p className="text-red-500 dark:text-red-400 font-medium">
+                      You're only hitting this green {currentHole.greenMisses.hit}% of the time. Try focusing on your approach shots.
+                    </p>
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-300">
+                      You tend to miss this green {(() => {
+                        const misses = currentHole.greenMisses;
+                        const maxMiss = Math.max(misses.short, misses.long, misses.left, misses.right);
+                        if (maxMiss === misses.short) return 'short';
+                        if (maxMiss === misses.long) return 'long';
+                        if (maxMiss === misses.left) return 'to the left';
+                        return 'to the right';
+                      })()} most frequently.
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <FairwayHeatmap holeData={holeData} activeHole={activeHole} />
+                <div className="mt-6 text-sm text-center max-w-md mx-auto">
+                  {currentHole.par === 3 ? (
+                    <p className="text-gray-600 dark:text-gray-300">
+                      This is a par 3 hole. Focus on your tee shot accuracy to hit the green.
+                    </p>
+                  ) : currentHole.fairwayMisses.center < 50 ? (
+                    <p className="text-amber-500 dark:text-amber-400 font-medium">
+                      You're only hitting this fairway {currentHole.fairwayMisses.center}% of the time. Consider using a more accurate club off the tee.
+                    </p>
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-300">
+                      You have a tendency to miss this fairway {currentHole.fairwayMisses.left > currentHole.fairwayMisses.right ? 'to the left' : 'to the right'}.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+            
+            <div className="mt-8 w-full">
+              <div className="text-xs text-gray-500 mb-2">Color legend (miss frequency)</div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-green-200 rounded"></div>
+                  <span className="text-xs">Low</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-green-300 rounded"></div>
+                  <span className="text-xs">10%+</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-yellow-400 rounded"></div>
+                  <span className="text-xs">20%+</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-orange-400 rounded"></div>
+                  <span className="text-xs">30%+</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-red-400 rounded"></div>
+                  <span className="text-xs">40%+</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-red-500 rounded"></div>
+                  <span className="text-xs">50%+</span>
+                </div>
               </div>
             </div>
+            
+            {data?.isDefault && (
+              <div className="mt-6 text-center">
+                <p className="text-amber-500 dark:text-amber-400 text-sm">
+                  This is sample data. Track your actual shots to see your personal miss patterns.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -18,20 +18,19 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import useSWR from 'swr';
 
-// Sample historical data
-const last10Rounds = [
-  { date: '2023-10-01', score: 89, putts: 36, fairwaysHitPercent: 45, girPercent: 28 },
-  { date: '2023-10-15', score: 87, putts: 35, fairwaysHitPercent: 50, girPercent: 33 },
-  { date: '2023-10-30', score: 86, putts: 34, fairwaysHitPercent: 48, girPercent: 33 },
-  { date: '2023-11-12', score: 84, putts: 33, fairwaysHitPercent: 51, girPercent: 39 },
-  { date: '2023-12-05', score: 83, putts: 32, fairwaysHitPercent: 53, girPercent: 44 },
-  { date: '2024-01-20', score: 85, putts: 33, fairwaysHitPercent: 52, girPercent: 39 },
-  { date: '2024-02-10', score: 82, putts: 31, fairwaysHitPercent: 57, girPercent: 44 },
-  { date: '2024-03-15', score: 80, putts: 30, fairwaysHitPercent: 60, girPercent: 50 },
-  { date: '2024-04-02', score: 81, putts: 31, fairwaysHitPercent: 58, girPercent: 44 },
-  { date: '2024-04-20', score: 79, putts: 29, fairwaysHitPercent: 64, girPercent: 56 }
-];
+// Define the performance data type
+interface PerformanceData {
+  date: string;
+  score: number;
+  putts: number;
+  fairwaysHitPercent: number;
+  girPercent: number;
+}
+
+// API fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // Format date to be more readable
 const formatDate = (dateStr: string) => {
@@ -98,8 +97,8 @@ const CustomTooltip = ({ active, payload, label, metric }: CustomTooltipProps) =
 };
 
 // Combined chart that shows multiple metrics
-const CombinedPerformanceChart = () => {
-  const formattedData = last10Rounds.map(round => ({
+const CombinedPerformanceChart = ({ data }: { data: PerformanceData[] }) => {
+  const formattedData = data.map(round => ({
     ...round,
     date: formatDate(round.date)
   }));
@@ -181,8 +180,8 @@ const CombinedPerformanceChart = () => {
 };
 
 // Single metric line chart with area fill
-const SingleMetricChart = ({ metric }: { metric: MetricType }) => {
-  const formattedData = last10Rounds.map(round => ({
+const SingleMetricChart = ({ data, metric }: { data: PerformanceData[], metric: MetricType }) => {
+  const formattedData = data.map(round => ({
     ...round,
     date: formatDate(round.date)
   }));
@@ -233,6 +232,10 @@ interface PerformanceHistoryChartProps {
 
 export default function PerformanceHistoryChart({ className }: PerformanceHistoryChartProps) {
   const [activeChart, setActiveChart] = useState<'combined' | MetricType>('combined');
+  const { data, error, isLoading } = useSWR('/api/stats?chart=performance&limit=10', fetcher);
+  
+  // Use real performance data if available, otherwise fall back to the data provided by the API
+  const performanceData: PerformanceData[] = data?.performanceData || [];
   
   return (
     <Card className={`shadow-md border-gray-100 dark:border-gray-800 overflow-hidden ${className}`}>
@@ -302,19 +305,44 @@ export default function PerformanceHistoryChart({ className }: PerformanceHistor
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
-        {activeChart === 'combined' ? (
-          <CombinedPerformanceChart />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-60">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10">
+            <p className="text-red-500 dark:text-red-400">Error loading performance data</p>
+            <Button 
+              onClick={() => window.location.reload()}
+              variant="outline"
+              size="sm"
+              className="mt-2"
+            >
+              Try Again
+            </Button>
+          </div>
         ) : (
-          <SingleMetricChart metric={activeChart} />
+          <>
+            {activeChart === 'combined' ? (
+              <CombinedPerformanceChart data={performanceData} />
+            ) : (
+              <SingleMetricChart data={performanceData} metric={activeChart} />
+            )}
+            
+            <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+              {activeChart === 'combined' ? (
+                <p>The chart shows your score and putts per round over time. Lower scores and fewer putts indicate improvement.</p>
+              ) : (
+                <p>{metricConfig[activeChart].description}. {activeChart === 'score' ? 'Lower values' : 'Higher values'} indicate improvement.</p>
+              )}
+              {data?.isDefault && (
+                <p className="mt-2 text-amber-500 dark:text-amber-400">
+                  This is sample data. Add rounds in the Analytics page to see your personal performance history.
+                </p>
+              )}
+            </div>
+          </>
         )}
-        
-        <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
-          {activeChart === 'combined' ? (
-            <p>The chart shows your score and putts per round over time. Lower scores and fewer putts indicate improvement.</p>
-          ) : (
-            <p>{metricConfig[activeChart].description}. {activeChart === 'score' ? 'Lower values' : 'Higher values'} indicate improvement.</p>
-          )}
-        </div>
       </CardContent>
     </Card>
   );

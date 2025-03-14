@@ -23,45 +23,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { PieChart as PieChartIcon, BarChart3, Activity } from 'lucide-react';
+import useSWR from 'swr';
 
-// Sample data for club distances
-const clubDistanceData = [
-  { club: 'Driver', avgDistance: 265, minDistance: 240, maxDistance: 290 },
-  { club: '3-Wood', avgDistance: 235, minDistance: 220, maxDistance: 250 },
-  { club: '5-Wood', avgDistance: 215, minDistance: 200, maxDistance: 230 },
-  { club: '4-Iron', avgDistance: 195, minDistance: 180, maxDistance: 210 },
-  { club: '5-Iron', avgDistance: 185, minDistance: 170, maxDistance: 200 },
-  { club: '6-Iron', avgDistance: 175, minDistance: 160, maxDistance: 190 },
-  { club: '7-Iron', avgDistance: 165, minDistance: 150, maxDistance: 180 },
-  { club: '8-Iron', avgDistance: 155, minDistance: 140, maxDistance: 170 },
-  { club: '9-Iron', avgDistance: 145, minDistance: 130, maxDistance: 160 },
-  { club: 'PW', avgDistance: 135, minDistance: 120, maxDistance: 150 },
-  { club: 'GW', avgDistance: 120, minDistance: 105, maxDistance: 135 },
-  { club: 'SW', avgDistance: 100, minDistance: 85, maxDistance: 115 },
-  { club: 'LW', avgDistance: 80, minDistance: 65, maxDistance: 95 },
-];
+// Define types for our data
+interface ClubDistance {
+  club: string;
+  avgDistance: number;
+  minDistance: number | null;
+  maxDistance: number | null;
+}
 
-// Scoring breakdown data
-const scoringBreakdownData = [
-  { name: 'Eagles', value: 1, color: '#4ade80' },
-  { name: 'Birdies', value: 8, color: '#22c55e' },
-  { name: 'Pars', value: 32, color: '#3b82f6' },
-  { name: 'Bogeys', value: 45, color: '#f97316' },
-  { name: 'Double Bogeys', value: 12, color: '#ef4444' },
-  { name: 'Triple+', value: 2, color: '#b91c1c' },
-];
+interface ScoringBreakdown {
+  name: string;
+  value: number;
+  color: string;
+}
 
-// Performance radar chart data
-const performanceRadarData = [
-  { metric: 'Driving Distance', value: 70, fullMark: 100 },
-  { metric: 'Driving Accuracy', value: 50, fullMark: 100 },
-  { metric: 'GIR', value: 40, fullMark: 100 },
-  { metric: 'Scrambling', value: 60, fullMark: 100 },
-  { metric: 'Putts per Round', value: 65, fullMark: 100 },
-  { metric: 'Sand Saves', value: 35, fullMark: 100 },
-];
+interface PerformanceRadar {
+  metric: string;
+  value: number;
+  fullMark: number;
+}
 
-type ChartType = 'clubDistances' | 'scoringBreakdown' | 'performanceRadar';
+// API fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -80,12 +65,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const ClubDistancesChart = () => {
+const ClubDistancesChart = ({ data }: { data: ClubDistance[] }) => {
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={clubDistanceData}
+          data={data}
           margin={{ top: 20, right: 20, left: 20, bottom: 60 }}
         >
           <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -108,7 +93,7 @@ const ClubDistancesChart = () => {
                   <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
                     <p className="text-sm font-medium">{data.club}</p>
                     <p className="text-sm text-blue-500">Avg: {data.avgDistance} yards</p>
-                    <p className="text-sm text-gray-500">Range: {data.minDistance} - {data.maxDistance} yards</p>
+                    <p className="text-sm text-gray-500">Range: {data.minDistance || '-'} - {data.maxDistance || '-'} yards</p>
                   </div>
                 );
               }
@@ -127,13 +112,13 @@ const ClubDistancesChart = () => {
   );
 };
 
-const ScoringBreakdownChart = () => {
+const ScoringBreakdownChart = ({ data }: { data: ScoringBreakdown[] }) => {
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={scoringBreakdownData}
+            data={data}
             cx="50%"
             cy="50%"
             labelLine={false}
@@ -142,7 +127,7 @@ const ScoringBreakdownChart = () => {
             dataKey="value"
             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
           >
-            {scoringBreakdownData.map((entry, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
@@ -154,7 +139,7 @@ const ScoringBreakdownChart = () => {
                   <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
                     <p className="text-sm font-medium" style={{ color: data.color }}>{data.name}</p>
                     <p className="text-sm">Count: {data.value}</p>
-                    <p className="text-sm">Percentage: {((data.value / scoringBreakdownData.reduce((acc, curr) => acc + curr.value, 0)) * 100).toFixed(1)}%</p>
+                    <p className="text-sm">Percentage: {((data.value / data.reduce((acc: number, curr: ScoringBreakdown) => acc + curr.value, 0)) * 100).toFixed(1)}%</p>
                   </div>
                 );
               }
@@ -168,11 +153,11 @@ const ScoringBreakdownChart = () => {
   );
 };
 
-const PerformanceRadarChart = () => {
+const PerformanceRadarChart = ({ data }: { data: PerformanceRadar[] }) => {
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={performanceRadarData}>
+        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
           <PolarGrid strokeDasharray="3 3" />
           <PolarAngleAxis dataKey="metric" tick={{ fontSize: 12 }} />
           <PolarRadiusAxis angle={30} domain={[0, 100]} />
@@ -209,7 +194,28 @@ interface MetricDetailChartProps {
 }
 
 export default function MetricDetailChart({ className }: MetricDetailChartProps) {
-  const [activeChart, setActiveChart] = useState<ChartType>('clubDistances');
+  const [activeChart, setActiveChart] = useState<'clubDistances' | 'scoringBreakdown' | 'performanceRadar'>('clubDistances');
+  
+  // Fetch club distances
+  const { data: clubsData, error: clubsError, isLoading: clubsLoading } = useSWR('/api/clubs', fetcher);
+  
+  // Fetch scoring data
+  const { data: scoringData, error: scoringError, isLoading: scoringLoading } = useSWR('/api/stats?chart=scoring', fetcher);
+  
+  // Fetch radar data
+  const { data: radarData, error: radarError, isLoading: radarLoading } = useSWR('/api/stats?chart=radar', fetcher);
+  
+  // Determine if we're loading based on which chart is active
+  const isLoading = 
+    (activeChart === 'clubDistances' && clubsLoading) ||
+    (activeChart === 'scoringBreakdown' && scoringLoading) ||
+    (activeChart === 'performanceRadar' && radarLoading);
+  
+  // Determine if there's an error based on which chart is active
+  const hasError = 
+    (activeChart === 'clubDistances' && clubsError) ||
+    (activeChart === 'scoringBreakdown' && scoringError) ||
+    (activeChart === 'performanceRadar' && radarError);
   
   return (
     <Card className={`shadow-md border-gray-100 dark:border-gray-800 overflow-hidden ${className}`}>
@@ -262,21 +268,65 @@ export default function MetricDetailChart({ className }: MetricDetailChartProps)
       </CardHeader>
       
       <CardContent className="p-4 sm:p-6">
-        {activeChart === 'clubDistances' && <ClubDistancesChart />}
-        {activeChart === 'scoringBreakdown' && <ScoringBreakdownChart />}
-        {activeChart === 'performanceRadar' && <PerformanceRadarChart />}
-        
-        <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
-          {activeChart === 'clubDistances' && (
-            <p>Club distances based on your last 20 rounds. This data helps you make more informed club selections on the course.</p>
-          )}
-          {activeChart === 'scoringBreakdown' && (
-            <p>Your scoring breakdown from the last 20 rounds (100 holes). Focus on reducing doubles and maximizing par opportunities.</p>
-          )}
-          {activeChart === 'performanceRadar' && (
-            <p>Performance radar showing your strengths and weaknesses compared to your target handicap. Scrambling and putting are your current strengths.</p>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-60">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : hasError ? (
+          <div className="text-center py-10">
+            <p className="text-red-500 dark:text-red-400">Error loading data</p>
+            <Button 
+              onClick={() => window.location.reload()}
+              variant="outline"
+              size="sm"
+              className="mt-2"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : (
+          <>
+            {activeChart === 'clubDistances' && clubsData && (
+              <ClubDistancesChart data={clubsData.clubDistances} />
+            )}
+            {activeChart === 'scoringBreakdown' && scoringData && (
+              <ScoringBreakdownChart data={scoringData.scoringBreakdown} />
+            )}
+            {activeChart === 'performanceRadar' && radarData && (
+              <PerformanceRadarChart data={radarData.performanceRadar} />
+            )}
+            
+            <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+              {activeChart === 'clubDistances' && (
+                <p>Club distances based on your recorded shots. This data helps you make more informed club selections on the course.
+                  {clubsData?.isDefault && (
+                    <span className="block mt-2 text-amber-500 dark:text-amber-400">
+                      This is sample data. Add your club distances to see personalized data.
+                    </span>
+                  )}
+                </p>
+              )}
+              {activeChart === 'scoringBreakdown' && (
+                <p>Your scoring breakdown from your recent rounds. Focus on reducing doubles and maximizing par opportunities.
+                  {scoringData?.isDefault && (
+                    <span className="block mt-2 text-amber-500 dark:text-amber-400">
+                      This is sample data. Add detailed round information to see your personal scoring breakdown.
+                    </span>
+                  )}
+                </p>
+              )}
+              {activeChart === 'performanceRadar' && (
+                <p>Performance radar showing your strengths and weaknesses compared to your target handicap. Scrambling and putting are your current strengths.
+                  {radarData?.isDefault && (
+                    <span className="block mt-2 text-amber-500 dark:text-amber-400">
+                      This is sample data. Add rounds to see your actual performance metrics.
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
