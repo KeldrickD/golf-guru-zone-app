@@ -2,7 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import OfflineRoundForm from '@/components/OfflineRoundForm';
 import OfflineIndicator from '@/components/OfflineIndicator';
 

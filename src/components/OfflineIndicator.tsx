@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Upload, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { 
   Popover, 
   PopoverContent, 
   PopoverTrigger 
-} from '@/components/ui/popover';
+} from '@/components/ui/Popover';
 import { 
   Card, 
   CardContent, 
@@ -16,7 +16,7 @@ import {
   CardFooter, 
   CardHeader, 
   CardTitle 
-} from '@/components/ui/card';
+} from '@/components/ui/Card';
 import { getOfflineRounds, syncOfflineRounds } from '@/lib/indexedDb';
 
 /**

@@ -46,6 +46,7 @@
     "openai": "^4.87.3",
     "prisma": "^6.5.0",
     "qrcode": "^1.5.4",
+    "qrcode.react": "^4.2.0",
     "react": "^18",
     "react-dom": "^18",
     "react-share": "^5.2.2",
