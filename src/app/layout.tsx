@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import '@/styles/rtl.css';
 import '@/styles/mobile-charts.css';
-import './mobile.css';
+import '@/styles/mobile.css';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
