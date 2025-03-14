@@ -14,7 +14,10 @@ import {
   X, 
   Sun, 
   Moon,
-  Search
+  Search,
+  Flag,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -41,6 +44,13 @@ const navigationItems: NavigationItem[] = [
     requiresAuth: false,
   },
   {
+    name: 'Rounds',
+    href: '/rounds',
+    icon: Flag,
+    description: 'Record and view your golf rounds',
+    requiresAuth: true,
+  },
+  {
     name: 'Rules Assistant',
     href: '/rules',
     icon: Book,
@@ -64,7 +74,7 @@ const navigationItems: NavigationItem[] = [
 ];
 
 const Navigation = () => {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const { data: session } = useSession();
   const { tier } = useSubscription();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -72,6 +82,22 @@ const Navigation = () => {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+
+  // Handle online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    setIsOnline(navigator.onLine);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -82,6 +108,17 @@ const Navigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close menu when window is resized to desktop size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) { // md breakpoint
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -89,6 +126,11 @@ const Navigation = () => {
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
   };
+
+  // Filter navigation items based on auth status
+  const filteredNavItems = navigationItems.filter(item => 
+    !item.requiresAuth || (item.requiresAuth && session)
+  );
 
   return (
     <>
@@ -110,14 +152,17 @@ const Navigation = () => {
                 <Trophy className="h-6 w-6 text-primary" />
               </motion.div>
               <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 text-transparent bg-clip-text">
-                Golf Guru Zone
+                Golf Guru
+              </span>
+              <span className="hidden sm:inline text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 text-transparent bg-clip-text">
+                Zone
               </span>
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:items-center md:space-x-1">
-              {navigationItems.map((item) => {
-                const isActive = pathname === item.href;
+              {filteredNavItems.map((item) => {
+                const isActive = pathname.startsWith(item.href);
                 const showProBadge = item.requiresPro && tier !== 'PRO';
 
                 return (
@@ -157,6 +202,14 @@ const Navigation = () => {
 
             {/* Desktop Right Section */}
             <div className="hidden md:flex md:items-center md:space-x-2">
+              {/* Online/Offline Indicator */}
+              {!isOnline && (
+                <div className="flex items-center mr-2 text-amber-500">
+                  <WifiOff className="h-4 w-4 mr-1" />
+                  <span className="text-xs font-medium">Offline</span>
+                </div>
+              )}
+
               {/* Search Button */}
               <Button 
                 variant="ghost" 
@@ -226,6 +279,13 @@ const Navigation = () => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center space-x-2">
+              {/* Online/Offline Indicator */}
+              {!isOnline && (
+                <div className="flex items-center mr-1">
+                  <WifiOff className="h-4 w-4 text-amber-500" />
+                </div>
+              )}
+
               {/* Search Button Mobile */}
               <Button 
                 variant="ghost" 
@@ -286,8 +346,8 @@ const Navigation = () => {
           className="md:hidden fixed top-16 inset-x-0 bottom-0 z-40 bg-white dark:bg-gray-900 overflow-hidden flex flex-col"
         >
           <div className="flex-1 px-2 py-3 space-y-2 overflow-y-auto">
-            {navigationItems.map((item) => {
-              const isActive = pathname === item.href;
+            {filteredNavItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
               const showProBadge = item.requiresPro && tier !== 'PRO';
 
               return (
@@ -330,6 +390,21 @@ const Navigation = () => {
                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">View our subscription plans</span>
               </div>
             </Link>
+
+            {/* Display offline status in mobile menu */}
+            {!isOnline && (
+              <div className="flex items-center space-x-3 px-4 py-3.5 rounded-xl text-base font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200">
+                <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/40">
+                  <WifiOff className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <span className="font-medium">Offline Mode</span>
+                  <span className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                    You're working offline. Changes will sync when you reconnect.
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile User Account - Bottom Fixed */}
