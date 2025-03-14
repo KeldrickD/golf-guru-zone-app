@@ -10,6 +10,9 @@ import { motion } from 'framer-motion';
 import PageHeader from '@/components/PageHeader';
 import Section from '@/components/Section';
 import { cn } from '@/lib/utils';
+import PerformanceHistoryChart from '@/components/charts/PerformanceHistoryChart';
+import CourseHeatmapChart from '@/components/charts/CourseHeatmapChart';
+import MetricDetailChart from '@/components/charts/MetricDetailChart';
 
 interface RoundStats {
   totalScore: number;
@@ -457,6 +460,25 @@ export default function AnalyticsPage() {
                 </Card>
               )}
             </div>
+          </div>
+        </div>
+      </Section>
+      
+      {/* New Advanced Visualizations Section */}
+      <Section
+        title="Advanced Performance Analytics"
+        description="Dive deeper into your game with detailed visualizations and trends"
+        darkBackground
+      >
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <PerformanceHistoryChart className="h-full" />
+          </div>
+          <div>
+            <MetricDetailChart className="h-full" />
+          </div>
+          <div className="md:col-span-2 lg:col-span-3">
+            <CourseHeatmapChart />
           </div>
         </div>
       </Section>
