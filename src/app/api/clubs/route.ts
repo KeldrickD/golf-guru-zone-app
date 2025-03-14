@@ -3,58 +3,88 @@ import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
-// GET /api/clubs - Retrieve user club distances
-export async function GET(request: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    // Get club distances
-    const clubDistances = await prisma.clubDistance.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      orderBy: {
-        avgDistance: 'desc',
-      },
-    });
-    
-    // If the user doesn't have club data yet, return a default set
-    if (clubDistances.length === 0) {
-      return NextResponse.json({ 
-        clubDistances: [
-          { club: 'Driver', avgDistance: 230, minDistance: 210, maxDistance: 250 },
-          { club: '3-Wood', avgDistance: 210, minDistance: 195, maxDistance: 225 },
-          { club: '5-Wood', avgDistance: 195, minDistance: 180, maxDistance: 210 },
-          { club: '4-Iron', avgDistance: 180, minDistance: 170, maxDistance: 190 },
-          { club: '5-Iron', avgDistance: 170, minDistance: 160, maxDistance: 180 },
-          { club: '6-Iron', avgDistance: 160, minDistance: 150, maxDistance: 170 },
-          { club: '7-Iron', avgDistance: 150, minDistance: 140, maxDistance: 160 },
-          { club: '8-Iron', avgDistance: 140, minDistance: 130, maxDistance: 150 },
-          { club: '9-Iron', avgDistance: 130, minDistance: 120, maxDistance: 140 },
-          { club: 'PW', avgDistance: 120, minDistance: 110, maxDistance: 130 },
-          { club: 'GW', avgDistance: 100, minDistance: 90, maxDistance: 110 },
-          { club: 'SW', avgDistance: 80, minDistance: 70, maxDistance: 90 },
-          { club: 'LW', avgDistance: 60, minDistance: 50, maxDistance: 70 },
-        ],
-        isDefault: true
-      });
-    }
-    
-    return NextResponse.json({ 
-      clubDistances,
-      isDefault: false
-    });
-  } catch (error) {
-    console.error('Error in /api/clubs GET:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve club distances' },
-      { status: 500 }
-    );
+// Mock clubs data
+const mockClubs = [
+  {
+    id: 1,
+    name: 'Driver',
+    brand: 'TaylorMade',
+    model: 'Stealth Plus',
+    type: 'Driver',
+    loft: 10.5,
+    flex: 'Stiff',
+    shaft: 'Mitsubishi Tensei 1K White 65',
+    yearReleased: 2022,
+    condition: 'Excellent',
+    notes: 'Primary driver for distance shots',
+    inBag: true,
+    userId: '1'
+  },
+  {
+    id: 2,
+    name: '3-Wood',
+    brand: 'Callaway',
+    model: 'Rogue ST Max',
+    type: 'Fairway Wood',
+    loft: 15,
+    flex: 'Stiff',
+    shaft: 'Project X HZRDUS Smoke',
+    yearReleased: 2022,
+    condition: 'Good',
+    notes: 'Great for long fairway shots',
+    inBag: true,
+    userId: '1'
+  },
+  {
+    id: 3,
+    name: '5-Iron',
+    brand: 'Mizuno',
+    model: 'JPX 921 Forged',
+    type: 'Iron',
+    loft: 24,
+    flex: 'Stiff',
+    shaft: 'True Temper Dynamic Gold 120',
+    yearReleased: 2021,
+    condition: 'Very Good',
+    notes: 'Consistent and forgiving',
+    inBag: true,
+    userId: '1'
+  },
+  {
+    id: 4,
+    name: 'Pitching Wedge',
+    brand: 'Cleveland',
+    model: 'RTX ZipCore',
+    type: 'Wedge',
+    loft: 46,
+    flex: 'Stiff',
+    shaft: 'True Temper Dynamic Gold',
+    yearReleased: 2021,
+    condition: 'Excellent',
+    notes: 'Great spin control',
+    inBag: true,
+    userId: '1'
+  },
+  {
+    id: 5,
+    name: 'Putter',
+    brand: 'Odyssey',
+    model: 'White Hot OG #1',
+    type: 'Putter',
+    loft: 3,
+    flex: 'N/A',
+    shaft: 'Steel',
+    yearReleased: 2021,
+    condition: 'Excellent',
+    notes: 'Consistent roll and feel',
+    inBag: true,
+    userId: '1'
   }
+];
+
+// GET /api/clubs - Retrieve user club data
+export async function GET() {
+  return NextResponse.json(mockClubs);
 }
 
 // PUT /api/clubs - Update a club distance
@@ -107,6 +137,26 @@ export async function PUT(request: Request) {
     console.error('Error in /api/clubs PUT:', error);
     return NextResponse.json(
       { error: 'Failed to update club distance' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    
+    // Simulate creating a new club
+    const newClub = {
+      id: mockClubs.length + 1,
+      ...data,
+      userId: '1'
+    };
+    
+    return NextResponse.json(newClub, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to create club' },
       { status: 500 }
     );
   }
