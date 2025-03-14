@@ -13,7 +13,7 @@ interface ThemeContextProps {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark'); // Default to dark mode
+  const [theme, setTheme] = useState<Theme>('light'); // Default to light mode
 
   // Apply theme on initial load and when changed
   useEffect(() => {
@@ -22,12 +22,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
   }, [theme]);
-
-  // Set theme class on body
-  useEffect(() => {
-    // Apply dark mode by default
-    setTheme('dark');
-  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
