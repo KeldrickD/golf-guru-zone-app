@@ -12,11 +12,10 @@ const nextConfig = {
     };
     return config;
   },
-  output: 'standalone',
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  output: 'export',
+  distDir: 'out',
   images: {
+    unoptimized: true,
     domains: ['ipfs.io', 'avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
   },
   // Configure dynamic routes
@@ -48,8 +47,6 @@ const nextConfig = {
       },
     ];
   },
-  // Disable static exports for API routes
-  output: 'standalone',
   // Disable static generation
   staticPageGenerationTimeout: 1000,
 }
