@@ -35,15 +35,43 @@ interface NavigationItem {
   description: string;
   requiresAuth: boolean;
   requiresPro?: boolean;
+  links?: { title: string; href: string; icon: string; description: string }[];
 }
 
 const navigationItems: NavigationItem[] = [
   {
-    name: 'Performance Analysis',
-    href: '/analytics',
+    name: 'Dashboard',
+    href: '/dashboard',
     icon: BarChart,
-    description: 'Track and improve your golf game',
+    description: 'Overview of your golf stats and performance',
     requiresAuth: false,
+  },
+  {
+    name: 'Performance Analysis',
+    href: '/performance-analysis',
+    icon: BarChart,
+    description: 'Detailed analysis with strokes gained metrics',
+    requiresAuth: false,
+    links: [
+      {
+        title: 'Strokes Gained',
+        href: '/performance-analysis?tab=strokes-gained',
+        icon: 'chart',
+        description: 'Analyze your game with strokes gained metrics'
+      },
+      {
+        title: 'Swing Analyzer',
+        href: '/performance-analysis?tab=swing-analyzer',
+        icon: 'video',
+        description: 'AI-powered swing analysis and feedback'
+      },
+      {
+        title: 'Goal Tracker',
+        href: '/performance-analysis?tab=goal-tracker',
+        icon: 'target',
+        description: 'Set goals and track your progress'
+      }
+    ]
   },
   {
     name: 'Rounds',
