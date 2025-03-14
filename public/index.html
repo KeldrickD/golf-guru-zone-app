@@ -3,65 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Guru Zone - Performance Analysis</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛳</text></svg>">
-    <meta name="description" content="AI-powered golf performance analysis tool that provides personalized insights and coaching tips.">
+    <title>Golf Guru Zone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #0369a1;
+        }
+        .card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .feature-icon {
+            background-color: #e6f7ff;
+            color: #0369a1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        .button {
+            background-color: #0369a1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #0284c7;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Golf Guru Zone</h1>
-            <h2>Performance Analysis</h2>
-        </header>
+    <header>
+        <h1>Golf Guru Zone</h1>
+        <p>Your personal AI-powered golf coach and analytics platform</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>Welcome to Golf Guru Zone</h2>
+            <p>
+                Create and manage golf bets with friends, track your performance, and improve your game.
+            </p>
+            <button class="button">Get Started</button>
+        </div>
+
+        <h2>Features</h2>
         
-        <main>
-            <section class="form-container">
-                <h3>Enter Your Golf Stats</h3>
-                <form id="golf-stats-form">
-                    <div class="form-group">
-                        <label for="score">Score:</label>
-                        <input type="number" id="score" name="score" required min="18" max="150">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="putts">Putts:</label>
-                        <input type="number" id="putts" name="putts" required min="0" max="100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fairways">Fairways Hit:</label>
-                        <input type="number" id="fairways" name="fairways" required min="0" max="18">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="greens">Greens in Regulation:</label>
-                        <input type="number" id="greens" name="greens" required min="0" max="18">
-                    </div>
-                    
-                    <button type="submit" id="analyze-btn">Analyze My Game</button>
-                </form>
-            </section>
-            
-            <section class="results-container" id="results-container" style="display: none;">
-                <h3>Your Analysis</h3>
-                <div id="loading" style="display: none;">Analyzing your stats...</div>
-                <div id="analysis-results"></div>
-            </section>
-            
-            <section class="limit-message" id="limit-message" style="display: none;">
-                <h3>Daily Limit Reached</h3>
-                <p>You've reached your daily limit of 5 analyses.</p>
-                <a href="#" id="upgrade-btn" class="upgrade-btn">Upgrade to Premium for Unlimited Analyses - $4.99/month</a>
-                <p class="premium-description">Unlock unlimited AI-powered golf performance analysis. Input your stats and get personalized coaching tips from your Golf Guru—improve faster, save time, and dominate the course. All for less than a sleeve of balls!</p>
-            </section>
-        </main>
+        <div class="feature">
+            <div class="feature-icon">🏌️</div>
+            <div>
+                <h3>Golf Bets</h3>
+                <p>Create and manage golf bets with friends using various formats like Match Play, Nassau, and Skins.</p>
+            </div>
+        </div>
         
-        <footer>
-            <p>&copy; 2023 Golf Guru Zone. All rights reserved.</p>
-        </footer>
-    </div>
-    
-    <script src="app.js"></script>
+        <div class="feature">
+            <div class="feature-icon">📊</div>
+            <div>
+                <h3>Performance Tracking</h3>
+                <p>Track your golf performance with detailed statistics and visualizations.</p>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">🤖</div>
+            <div>
+                <h3>AI Recommendations</h3>
+                <p>Get personalized recommendations to improve your game based on your performance data.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Golf Guru Zone. All rights reserved.</p>
+    </footer>
 </body>
 </html> 

@@ -1,50 +1,79 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-const prisma = new PrismaClient();
+// Define custom user type
+interface CustomUser {
+  id: string;
+  name: string;
+  email: string;
+  image?: string;
+  subscription?: {
+    status: string;
+    plan: string;
+    nextBillingDate: string;
+  };
+}
+
+// Mock user data
+const mockUsers: CustomUser[] = [
+  {
+    id: '1',
+    name: 'Demo User',
+    email: 'demo@example.com',
+    image: 'https://via.placeholder.com/150',
+    subscription: {
+      status: 'active',
+      plan: 'premium',
+      nextBillingDate: '2023-12-01',
+    }
+  }
+];
 
 const handler = NextAuth({
-  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || 'mock-client-id',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'mock-client-secret',
     }),
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        // Mock authentication
+        if (credentials?.email === 'demo@example.com' && credentials?.password === 'password') {
+          return mockUsers[0] as any;
+        }
+        return null;
+      }
+    })
   ],
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        // Cast user to CustomUser to access subscription
+        token.subscription = (user as unknown as CustomUser).subscription;
+      }
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        
-        // Get subscription status
-        const subscription = await prisma.subscription.findUnique({
-          where: { userId: user.id },
-        });
-        
-        session.user.subscription = subscription;
+        session.user.id = token.id as string;
+        session.user.subscription = token.subscription;
       }
       return session;
-    },
+    }
   },
-  events: {
-    async createUser({ user }) {
-      // Create Stripe customer when user signs up
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-      const customer = await stripe.customers.create({
-        email: user.email!,
-        metadata: {
-          userId: user.id,
-        },
-      });
-
-      // Update user with Stripe customer ID
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId: customer.id },
-      });
-    },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
+  session: {
+    strategy: 'jwt',
   },
 });
 

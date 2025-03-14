@@ -2,11 +2,14 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-// Serve static files from the 'out' directory
-app.use(express.static(path.join(__dirname, 'out')));
+// First try to serve from out/export if it exists
+app.use(express.static(path.join(__dirname, 'out', 'export')));
+
+// Also serve from public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Handle API requests with mock data
-app.get('/api/mock/:path*', (req, res) => {
+app.get('/api/:path*', (req, res) => {
   const path = req.params.path;
   
   // Mock data for different API endpoints
@@ -67,15 +70,34 @@ app.get('/api/mock/:path*', (req, res) => {
   }
   
   // Default response if endpoint not found
-  return res.status(404).json({ message: 'Mock API endpoint not found' });
+  return res.status(404).json({ message: 'API endpoint not found' });
 });
 
-// For all other routes, serve the index.html file
+// For all other routes, try to serve the Next.js exported index.html
+// If it doesn't exist, fall back to our public/index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'out', 'index.html'));
+  const nextJsExportPath = path.join(__dirname, 'out', 'export', 'index.html');
+  const fallbackPath = path.join(__dirname, 'public', 'index.html');
+  
+  // Check if Next.js export exists
+  try {
+    if (require('fs').existsSync(nextJsExportPath)) {
+      return res.sendFile(nextJsExportPath);
+    }
+  } catch (err) {
+    console.log('Using fallback HTML');
+  }
+  
+  // Use fallback
+  return res.sendFile(fallbackPath);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`
+======================================
+Server is running on port ${PORT}
+Open http://localhost:${PORT} in your browser
+======================================
+  `);
 }); 

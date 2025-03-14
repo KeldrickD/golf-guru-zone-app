@@ -18,7 +18,7 @@ import StatsComparisonChart from '@/components/charts/StatsComparisonChart';
 import { GoalSettingWidget } from '@/components/GoalSettingWidget';
 import { useToast } from '@/components/ui/useToast';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/components/SessionProvider';
 import ShareLinkGenerator from '@/components/ShareLinkGenerator';
 import GolfPerformanceReport from '@/components/pdf/GolfPerformanceReport';
 
@@ -58,7 +58,7 @@ export default function AnalyticsPage() {
   const today = new Date().toISOString().split('T')[0];
   const { toast } = useToast();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { session, status } = useSession();
   const formRef = useRef<HTMLFormElement>(null);
 
   const [stats, setStats] = useState<RoundStats>({

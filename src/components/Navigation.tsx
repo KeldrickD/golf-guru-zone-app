@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession } from '@/components/SessionProvider';
 import { useSubscription } from '@/hooks/useSubscription';
 import { motion } from 'framer-motion';
 import { useTheme } from './ThemeProvider';
@@ -75,7 +75,7 @@ const navigationItems: NavigationItem[] = [
 
 const Navigation = () => {
   const pathname = usePathname() || '';
-  const { data: session } = useSession();
+  const { session, status } = useSession();
   const { tier } = useSubscription();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -237,7 +237,7 @@ const Navigation = () => {
               {/* User Account */}
               {!session ? (
                 <Button 
-                  onClick={() => signIn('google')} 
+                  onClick={() => { /* Mock sign in */ }}
                   variant="default" 
                   size="sm" 
                   className="rounded-full px-4 ml-2 shadow-sm hover:shadow transition-shadow"
@@ -268,7 +268,7 @@ const Navigation = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => signOut()} 
+                    onClick={() => { /* Mock sign out */ }}
                     className="rounded-full border-primary/20 hover:border-primary/40 text-gray-700 dark:text-gray-200"
                   >
                     Sign Out
@@ -410,7 +410,7 @@ const Navigation = () => {
           {/* Mobile User Account - Bottom Fixed */}
           <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800/20">
             {!session ? (
-              <Button onClick={() => signIn('google')} className="w-full rounded-xl py-5 text-base">
+              <Button onClick={() => { /* Mock sign in */ }} className="w-full rounded-xl py-5 text-base">
                 Sign In with Google
               </Button>
             ) : (
@@ -437,7 +437,7 @@ const Navigation = () => {
                       Account
                     </Button>
                   </Link>
-                  <Button variant="default" onClick={() => signOut()} className="w-full py-5 rounded-xl text-base">
+                  <Button variant="default" onClick={() => { /* Mock sign out */ }} className="w-full py-5 rounded-xl text-base">
                     Sign Out
                   </Button>
                 </div>
