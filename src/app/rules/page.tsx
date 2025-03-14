@@ -344,8 +344,8 @@ export default function RulesPage() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              </div>
+      </div>
+    </div>
             </TabsContent>
 
             <TabsContent value="hub" className="mt-0">

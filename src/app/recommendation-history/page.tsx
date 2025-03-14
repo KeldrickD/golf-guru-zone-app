@@ -171,10 +171,10 @@ export default function RecommendationHistory() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Your Recommendations</h1>
-        <p className="text-muted-foreground">
+            <p className="text-muted-foreground">
           View and manage all personalized recommendations from Golf Guru.
         </p>
-      </div>
+        </div>
 
       <Tabs defaultValue="all" className="mb-8" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -186,20 +186,20 @@ export default function RecommendationHistory() {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
-          <Card>
-            <CardHeader>
+              <Card>
+                <CardHeader>
               <CardTitle>{activeTab === 'saved' ? 'Saved Recommendations' : `${activeTab === 'all' ? 'All' : activeTab} Recommendations`}</CardTitle>
-              <CardDescription>
+                  <CardDescription>
                 {activeTab === 'saved' 
                   ? 'Recommendations you\'ve saved for future reference' 
                   : `${activeTab === 'all' ? 'All personalized' : activeTab} recommendations based on your golf data`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
               {filteredRecommendations.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">No recommendations found in this category.</p>
-                </div>
+                    </div>
               ) : (
                 <Table>
                   <TableCaption>Total: {filteredRecommendations.length} recommendations</TableCaption>
@@ -231,7 +231,7 @@ export default function RecommendationHistory() {
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-xs truncate">
                           {rec.details}
                         </TableCell>
-                        <TableCell>
+                          <TableCell>
                           <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm">{rec.actions}</Button>
                             {!rec.saved && (
@@ -250,8 +250,8 @@ export default function RecommendationHistory() {
                   </TableBody>
                 </Table>
               )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
     </div>

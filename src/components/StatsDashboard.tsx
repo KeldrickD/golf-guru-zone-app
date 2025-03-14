@@ -125,11 +125,11 @@ export function StatsDashboard() {
             <CardDescription>
               Track your performance and see your progress over time
             </CardDescription>
-          </div>
+        </div>
           <div className="flex items-center text-muted-foreground text-sm">
             <Calendar className="h-4 w-4 mr-1" />
             <span>Last round: {stats.lastRoundDate.toLocaleDateString()}</span>
-          </div>
+      </div>
         </div>
       </CardHeader>
       <CardContent className="px-0 space-y-6">
@@ -179,7 +179,7 @@ export function StatsDashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+            </div>
 
         {/* Performance Trends */}
         <Tabs defaultValue="trends">
@@ -233,7 +233,7 @@ export function StatsDashboard() {
                           className="h-full bg-primary rounded-full" 
                           style={{ width: `${data.accuracy}%` }}
                         />
-                      </div>
+            </div>
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Accuracy: {data.accuracy}%</span>
                         {category === 'driving' && (
@@ -277,9 +277,9 @@ export function StatsDashboard() {
                         <div className="w-3 h-3 rounded-full bg-red-500 mr-2" />
                         <span>Putting: 25%</span>
                       </div>
-                    </div>
-                  </div>
-                </div>
+            </div>
+          </div>
+    </div>
               </CardContent>
             </Card>
           </TabsContent>
