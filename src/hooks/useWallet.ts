@@ -1,62 +1,28 @@
 import { useState, useEffect } from 'react';
 
 export const useWallet = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [address, setAddress] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(true); // Default to connected for mock
+  const [address, setAddress] = useState<string | null>('0x1234567890abcdef1234567890abcdef12345678'); // Mock address
 
-  useEffect(() => {
-    // Check if MetaMask is installed
-    const { ethereum } = window as any;
-    if (ethereum) {
-      // Check if already connected
-      ethereum.request({ method: 'eth_accounts' })
-        .then((accounts: string[]) => {
-          if (accounts.length > 0) {
-            setIsConnected(true);
-            setAddress(accounts[0]);
-          }
-        })
-        .catch(console.error);
-
-      // Listen for account changes
-      ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length > 0) {
-          setIsConnected(true);
-          setAddress(accounts[0]);
-        } else {
-          setIsConnected(false);
-          setAddress(null);
-        }
-      });
-    }
-  }, []);
-
+  // Mock connect function
   const connect = async () => {
     try {
-      const { ethereum } = window as any;
-      if (!ethereum) {
-        throw new Error('Please install MetaMask');
-      }
-
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      if (accounts.length > 0) {
-        setIsConnected(true);
-        setAddress(accounts[0]);
-      }
+      setIsConnected(true);
+      setAddress('0x1234567890abcdef1234567890abcdef12345678');
+      return true;
     } catch (error) {
       console.error('Error connecting wallet:', error);
       throw error;
     }
   };
 
+  // Mock disconnect function
   const disconnect = () => {
     setIsConnected(false);
     setAddress(null);
   };
 
+  // Mock getAddress function
   const getAddress = async () => {
     if (!isConnected) {
       return null;

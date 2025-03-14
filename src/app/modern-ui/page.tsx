@@ -2,109 +2,110 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWallet } from '@/hooks/useWallet';
 import BetFormSimple from '@/components/BetFormSimple';
 import BetCard from '@/components/BetCard';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import BottomNavBar from '@/components/ui/BottomNavBar';
-import { HomeIcon, ChartBarIcon, UserIcon, BellIcon, PlusIcon } from 'lucide-react';
+import BottomNavigation from '@/components/BottomNavigation';
+import { useWallet } from '@/hooks/useWallet';
 
 export default function ModernUIPage() {
   const router = useRouter();
   const { isConnected } = useWallet();
   const [showBetForm, setShowBetForm] = useState(false);
-  const [activeSection, setActiveSection] = useState('home');
+  const [recentBets, setRecentBets] = useState<any[]>([]);
 
+  // Mock data for recent bets
   useEffect(() => {
-    if (!isConnected) {
-      router.push('/');
-    }
-  }, [isConnected, router]);
+    // Simulate loading recent bets
+    const mockBets = [
+      {
+        id: 'bet_1',
+        type: 'Match Play',
+        amount: '25',
+        players: ['Player 1', 'Player 2'],
+        status: 'active',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'bet_2',
+        type: 'Nassau',
+        amount: '10',
+        players: ['Player 1', 'Player 3', 'Player 4'],
+        status: 'completed',
+        createdAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+      }
+    ];
+    
+    setRecentBets(mockBets);
+  }, []);
 
-  const handleCreateBet = () => {
-    setShowBetForm(true);
+  const handleBetCreated = () => {
+    setShowBetForm(false);
+    // Add the new bet to the list (in a real app, you'd fetch from API)
+    const newBet = {
+      id: 'bet_' + Date.now(),
+      type: 'Match Play',
+      amount: '10',
+      players: ['Player 1'],
+      status: 'active',
+      createdAt: new Date().toISOString()
+    };
+    setRecentBets([newBet, ...recentBets]);
   };
 
-  const navItems = [
-    { id: 'home', label: 'Home', icon: <HomeIcon /> },
-    { id: 'stats', label: 'Stats', icon: <ChartBarIcon /> },
-    { id: 'profile', label: 'Profile', icon: <UserIcon /> },
-    { id: 'notifications', label: 'Notifications', icon: <BellIcon /> }
-  ];
-
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6">
-          {/* Welcome Section */}
-          <Card className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Welcome to Golf Guru Zone</h1>
-            <p className="text-muted-foreground mb-4">
-              Create and manage your golf bets with ease. Track your performance and compete with friends.
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* Main content */}
+      <main className="flex-1 container mx-auto px-4 py-6 max-w-md">
+        {/* Welcome message */}
+        {!showBetForm && (
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold mb-2">Welcome to Golf Guru Zone</h1>
+            <p className="text-gray-600">
+              Create and manage your golf bets with friends
             </p>
-            <Button onClick={handleCreateBet}>Create New Bet</Button>
-          </Card>
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-3">Quick Actions</h2>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  View Active Bets
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  View Performance
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  View Rules
-                </Button>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-3">Recent Activity</h2>
-              <div className="space-y-4">
-                <BetCard
-                  id="1"
-                  type="Match Play"
-                  amount="0.1"
-                  creator="You"
-                  players={['You', 'John']}
-                  joinedPlayers={['You']}
-                  createdAt={new Date().toISOString()}
-                  settled={false}
-                  onJoin={() => {}}
-                  onVote={() => {}}
-                />
-              </div>
-            </Card>
           </div>
-        </div>
+        )}
 
-        {showBetForm && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm">
-            <div className="fixed inset-x-4 top-[50%] translate-y-[-50%] max-w-lg mx-auto">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Create New Bet</h2>
-                <BetFormSimple onBetCreated={() => setShowBetForm(false)} />
-              </Card>
+        {/* Bet form or recent bets */}
+        {showBetForm ? (
+          <BetFormSimple onBetCreated={handleBetCreated} />
+        ) : (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Recent Bets</h2>
+              <button
+                onClick={() => setShowBetForm(true)}
+                className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                + New Bet
+              </button>
             </div>
+
+            {recentBets.length > 0 ? (
+              recentBets.map(bet => (
+                <BetCard
+                  key={bet.id}
+                  bet={bet}
+                  onClick={() => router.push(`/bets/${bet.id}`)}
+                />
+              ))
+            ) : (
+              <div className="text-center py-10 bg-white rounded-lg shadow-sm">
+                <div className="text-gray-500 mb-2">No bets yet</div>
+                <button
+                  onClick={() => setShowBetForm(true)}
+                  className="text-primary font-medium"
+                >
+                  Create your first bet
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
 
-      <BottomNavBar
-        items={navItems}
-        activeItem={activeSection}
-        onItemClick={setActiveSection}
-        centerActionButton={{
-          icon: <PlusIcon />,
-          onClick: handleCreateBet,
-          label: 'Create Bet'
-        }}
-      />
+      {/* Bottom navigation */}
+      <BottomNavigation />
     </div>
   );
 } 

@@ -1,16 +1,13 @@
 'use client';
 
-import { ethers } from 'ethers';
 import ServiceRegistry from './serviceRegistry';
-import contractAbi from '../abi/GolfBetTracker.json';
-import networkConfig from '../config/networks';
 
 export interface Bet {
   id: string;
   betName: string;
   creator: string;
   players: string[];
-  amount: ethers.BigNumberish;
+  amount: string;
   course: string;
   date: Date;
   status: number; // 0: Created, 1: Active, 2: Completed, 3: Canceled
@@ -21,11 +18,10 @@ export interface Bet {
 
 class ContractService {
   private static instance: ContractService;
-  private contract: ethers.Contract | null = null;
   private contractAddress: string | null = null;
-  
+
   private constructor() {}
-  
+
   static getInstance(): ContractService {
     if (typeof window === 'undefined') {
       return {} as ContractService;
@@ -39,151 +35,116 @@ class ContractService {
   private getWalletService() {
     return ServiceRegistry.getInstance().get('walletService');
   }
-  
+
   /**
-   * Initialize the contract instance for the given network
+   * Initialize the contract instance for the given network - MOCK IMPLEMENTATION
    */
   async initializeContract(): Promise<boolean> {
     try {
-      // Get provider and signer
-      const provider = this.getWalletService().getProvider();
-      if (!provider) {
-        throw new Error('Wallet not connected');
-      }
-      
-      const signer = this.getWalletService().getSigner();
-      if (!signer) {
-        throw new Error('Wallet not connected');
-      }
-      
-      // Get chain ID
-      const chainId = await this.getWalletService().getChainId();
-      if (!chainId) {
-        throw new Error('Chain ID not available');
-      }
-      
-      // Get contract address for the current network
-      const networkData = this.getNetworkData(chainId);
-      if (!networkData || !networkData.contractAddress) {
-        throw new Error(`Contract not deployed on network with chain ID ${chainId}`);
-      }
-      
-      this.contractAddress = networkData.contractAddress;
-      if (!this.contractAddress) {
-        throw new Error('Contract address not available');
-      }
-      
-      // Create contract instance
-      this.contract = new ethers.Contract(
-        this.contractAddress,
-        contractAbi.abi,
-        signer
-      );
-      
+      // Mock initialization
+      this.contractAddress = '0x1234567890abcdef1234567890abcdef12345678';
       return true;
-      
     } catch (error) {
       console.error('Error initializing contract:', error);
       return false;
     }
   }
-  
+
   /**
-   * Get network data for the current chain ID
-   * @param chainId Chain ID to get data for
-   */
-  private getNetworkData(chainId: number): any {
-    // Look up network by chain ID
-    const networkKey = Object.keys(networkConfig).find(
-      key => networkConfig[key].chainId === chainId
-    );
-    
-    if (!networkKey) {
-      return null;
-    }
-    
-    return networkConfig[networkKey];
-  }
-  
-  /**
-   * Get all bets created by the current user
+   * Get all bets created by the current user - MOCK IMPLEMENTATION
    */
   async getMyBets(): Promise<Bet[]> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      const address = await this.getWalletService().getAddress();
-      if (!address || !this.contract) {
-        return [];
-      }
-      
-      // Get bets created by user
-      const myBets = await this.contract.getBetsByCreator(address);
-      
-      return this.formatBets(myBets);
-      
+      // Mock data
+      return [
+        {
+          id: 'bet_123456',
+          betName: 'Weekend Match',
+          creator: '0x1234567890abcdef1234567890abcdef12345678',
+          players: ['0x1234567890abcdef1234567890abcdef12345678', '0x2345678901abcdef2345678901abcdef23456789'],
+          amount: '10',
+          course: 'Pine Valley Golf Club',
+          date: new Date(),
+          status: 1,
+          winner: '',
+          joined: ['0x1234567890abcdef1234567890abcdef12345678'],
+          votes: {}
+        }
+      ];
     } catch (error) {
       console.error('Error getting user bets:', error);
       return [];
     }
   }
-  
+
   /**
-   * Get all active bets available for joining
+   * Get all active bets available for joining - MOCK IMPLEMENTATION
    */
   async getActiveBets(): Promise<Bet[]> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        return [];
-      }
-      
-      // Get all active bets
-      const activeBets = await this.contract.getActiveBets();
-      
-      return this.formatBets(activeBets);
-      
+      // Mock data
+      return [
+        {
+          id: 'bet_123456',
+          betName: 'Weekend Match',
+          creator: '0x1234567890abcdef1234567890abcdef12345678',
+          players: ['0x1234567890abcdef1234567890abcdef12345678', '0x2345678901abcdef2345678901abcdef23456789'],
+          amount: '10',
+          course: 'Pine Valley Golf Club',
+          date: new Date(),
+          status: 1,
+          winner: '',
+          joined: ['0x1234567890abcdef1234567890abcdef12345678'],
+          votes: {}
+        },
+        {
+          id: 'bet_234567',
+          betName: 'Tournament Challenge',
+          creator: '0x3456789012abcdef3456789012abcdef34567890',
+          players: ['0x3456789012abcdef3456789012abcdef34567890', '0x4567890123abcdef4567890123abcdef45678901'],
+          amount: '25',
+          course: 'Augusta National',
+          date: new Date(),
+          status: 1,
+          winner: '',
+          joined: ['0x3456789012abcdef3456789012abcdef34567890'],
+          votes: {}
+        }
+      ];
     } catch (error) {
       console.error('Error getting active bets:', error);
       return [];
     }
   }
-  
+
   /**
-   * Get bet by ID
+   * Get bet by ID - MOCK IMPLEMENTATION
    * @param betId Bet ID
    */
   async getBetById(betId: string): Promise<Bet | null> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        return null;
-      }
-      
-      // Get bet by ID
-      const bet = await this.contract.getBet(betId);
-      
-      // Format the bet
-      const formattedBets = this.formatBets([bet]);
-      
-      return formattedBets.length > 0 ? formattedBets[0] : null;
-      
+      // Mock data
+      return {
+        id: betId,
+        betName: 'Weekend Match',
+        creator: '0x1234567890abcdef1234567890abcdef12345678',
+        players: ['0x1234567890abcdef1234567890abcdef12345678', '0x2345678901abcdef2345678901abcdef23456789'],
+        amount: '10',
+        course: 'Pine Valley Golf Club',
+        date: new Date(),
+        status: 1,
+        winner: '',
+        joined: ['0x1234567890abcdef1234567890abcdef12345678'],
+        votes: {}
+      };
     } catch (error) {
       console.error('Error getting bet by ID:', error);
       return null;
     }
   }
-  
+
   /**
-   * Create a new bet
+   * Create a new bet - MOCK IMPLEMENTATION
    * @param betType Type of the bet
    * @param opponents Array of opponent addresses
    * @param amount Amount of the bet
@@ -200,7 +161,7 @@ class ContractService {
     feePercentage: number = 0
   ): Promise<string> {
     try {
-      // Mock implementation - in a real app, this would call the smart contract
+      // Mock implementation
       await new Promise(resolve => setTimeout(resolve, 1000));
       return 'bet_' + Date.now().toString();
     } catch (error) {
@@ -208,14 +169,14 @@ class ContractService {
       throw error;
     }
   }
-  
+
   /**
-   * Join a bet
+   * Join a bet - MOCK IMPLEMENTATION
    * @param betId Bet ID
    */
   async joinBet(betId: string, amount: string): Promise<boolean> {
     try {
-      // Mock implementation - in a real app, this would call the smart contract
+      // Mock implementation
       await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
     } catch (error) {
@@ -223,175 +184,95 @@ class ContractService {
       throw error;
     }
   }
-  
+
   /**
-   * Vote for a winner
+   * Vote for a winner - MOCK IMPLEMENTATION
    * @param betId Bet ID
    * @param winner Address of the player to vote for
    */
   async voteForWinner(betId: string, winner: string): Promise<boolean> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        throw new Error('Contract not initialized');
-      }
-      
-      // Vote for winner
-      const tx = await this.contract.voteForWinner(betId, winner);
-      
-      // Wait for transaction to be mined
-      await tx.wait();
-      
+      // Mock implementation
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
-      
     } catch (error) {
       console.error('Error voting for winner:', error);
       return false;
     }
   }
-  
+
   /**
-   * Cancel a bet (only creator can cancel a bet)
+   * Cancel a bet - MOCK IMPLEMENTATION
    * @param betId Bet ID
    */
   async cancelBet(betId: string): Promise<boolean> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        throw new Error('Contract not initialized');
-      }
-      
-      // Cancel bet
-      const tx = await this.contract.cancelBet(betId);
-      
-      // Wait for transaction to be mined
-      await tx.wait();
-      
+      // Mock implementation
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
-      
     } catch (error) {
       console.error('Error canceling bet:', error);
       return false;
     }
   }
-  
+
   /**
-   * Check if consensus has been reached and settle the bet
+   * Check if consensus has been reached and settle the bet - MOCK IMPLEMENTATION
    * @param betId Bet ID
    */
   async checkConsensus(betId: string): Promise<boolean> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        throw new Error('Contract not initialized');
-      }
-      
-      // Check consensus
-      const tx = await this.contract.checkConsensus(betId);
-      
-      // Wait for transaction to be mined
-      await tx.wait();
-      
+      // Mock implementation
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
-      
     } catch (error) {
       console.error('Error checking consensus:', error);
       return false;
     }
   }
-  
+
   /**
-   * Check if user has joined a bet
+   * Check if user has joined a bet - MOCK IMPLEMENTATION
    * @param betId Bet ID
    */
   async hasUserJoined(betId: string): Promise<boolean> {
     try {
-      if (!this.contract) {
-        await this.initializeContract();
-      }
-      
-      if (!this.contract) {
-        return false;
-      }
-      
-      const address = await this.getWalletService().getAddress();
-      if (!address) {
-        return false;
-      }
-      
-      // Get bet by ID
-      const bet = await this.getBetById(betId);
-      if (!bet) {
-        return false;
-      }
-      
-      // Check if user has joined
-      return bet.joined.includes(address.toLowerCase());
-      
+      // Mock implementation
+      return true;
     } catch (error) {
       console.error('Error checking if user joined bet:', error);
       return false;
     }
   }
-  
+
   /**
-   * Format bets returned from the contract
-   * @param bets Array of bets from contract
-   */
-  private formatBets(bets: any[]): Bet[] {
-    return bets.map(bet => {
-      // Parse votes into a more usable format
-      const votes: Record<string, string> = {};
-      bet.votes.forEach((vote: any) => {
-        votes[vote.voter.toLowerCase()] = vote.votedFor.toLowerCase();
-      });
-      
-      return {
-        id: bet.id.toString(),
-        betName: bet.betName,
-        creator: bet.creator.toLowerCase(),
-        players: bet.players.map((player: string) => player.toLowerCase()),
-        amount: bet.amount,
-        course: bet.course,
-        date: new Date(bet.date.toNumber() * 1000),
-        status: bet.status,
-        winner: bet.winner.toLowerCase(),
-        joined: bet.joinedPlayers.map((player: string) => player.toLowerCase()),
-        votes
-      };
-    });
-  }
-  
-  /**
-   * Get the contract address
+   * Get the contract address - MOCK IMPLEMENTATION
    */
   getContractAddress(): string | null {
     return this.contractAddress;
   }
-  
+
+  /**
+   * Get user bets - MOCK IMPLEMENTATION
+   * @param userAddress User address
+   */
   async getUserBets(userAddress: string): Promise<string[]> {
     try {
-      // Mock implementation - in a real app, this would call the smart contract
-      // Return an empty array for now
-      return [];
+      // Mock implementation
+      return ['bet_123456', 'bet_234567'];
     } catch (error) {
       console.error('Error getting user bets:', error);
       throw error;
     }
   }
-  
+
+  /**
+   * Get bet - MOCK IMPLEMENTATION
+   * @param betId Bet ID
+   */
   async getBet(betId: string): Promise<any> {
     try {
-      // Mock implementation - in a real app, this would call the smart contract
+      // Mock implementation
       return {
         betType: 'GOLF_ROUND',
         amount: '0.1',
@@ -407,9 +288,14 @@ class ContractService {
     }
   }
 
+  /**
+   * Vote for winner - MOCK IMPLEMENTATION
+   * @param betId Bet ID
+   * @param winner Winner address
+   */
   async voteWinner(betId: string, winner: string): Promise<boolean> {
     try {
-      // Mock implementation - in a real app, this would call the smart contract
+      // Mock implementation
       await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
     } catch (error) {
@@ -418,12 +304,16 @@ class ContractService {
     }
   }
 
+  /**
+   * Get USDC balance - MOCK IMPLEMENTATION
+   * @param address User address
+   */
   async getUSDCBalance(address: string | null): Promise<string> {
     try {
       if (!address) {
         return '0.00';
       }
-      // Mock implementation - in a real app, this would call the USDC contract
+      // Mock implementation
       await new Promise(resolve => setTimeout(resolve, 500));
       return '1000.00';
     } catch (error) {

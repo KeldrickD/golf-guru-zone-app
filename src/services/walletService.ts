@@ -1,6 +1,5 @@
 'use client';
 
-import { ethers } from 'ethers';
 import AnalyticsService from './analyticsService';
 import ServiceRegistry from './serviceRegistry';
 
@@ -28,28 +27,21 @@ export enum NetworkIds {
 
 class WalletService {
   private static instance: WalletService | null = null;
-  private provider: ethers.BrowserProvider | null = null;
-  private signer: ethers.JsonRpcSigner | null = null;
   private walletInfo: WalletInfo | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
   private analyticsService: AnalyticsService;
-  
+
   private constructor() {
     this.analyticsService = AnalyticsService.getInstance();
     // Initialize event listeners map for each event type
     Object.values(WalletEvents).forEach(event => {
       this.eventListeners.set(event, []);
     });
-    
-    // Set up window ethereum event listeners if in browser
-    if (typeof window !== 'undefined' && (window as any).ethereum) {
-      this.setupEthereumListeners();
-    }
-    
+
     // Register this instance
     ServiceRegistry.getInstance().register('walletService', this);
   }
-  
+
   static getInstance(): WalletService {
     if (typeof window === 'undefined') {
       return {} as WalletService;
@@ -59,116 +51,59 @@ class WalletService {
     }
     return WalletService.instance;
   }
-  
+
   /**
-   * Set up listeners for Ethereum provider events
-   */
-  private setupEthereumListeners(): void {
-    const ethereum = (window as any).ethereum;
-    
-    ethereum.on('accountsChanged', (accounts: string[]) => {
-      if (accounts.length === 0) {
-        // User disconnected the wallet
-        this.walletInfo = null;
-        this.emitEvent(WalletEvents.DISCONNECTED, null);
-      } else {
-        // Account changed
-        if (this.walletInfo) {
-          this.walletInfo.address = accounts[0];
-          this.emitEvent(WalletEvents.ACCOUNT_CHANGED, accounts[0]);
-        } else {
-          // This shouldn't happen, but just in case
-          this.connect().catch(console.error);
-        }
-      }
-    });
-    
-    ethereum.on('chainChanged', (chainIdHex: string) => {
-      const chainId = parseInt(chainIdHex, 16);
-      if (this.walletInfo) {
-        this.walletInfo.chainId = chainId;
-        this.emitEvent(WalletEvents.CHAIN_CHANGED, chainId);
-      }
-    });
-    
-    ethereum.on('disconnect', () => {
-      this.walletInfo = null;
-      this.emitEvent(WalletEvents.DISCONNECTED, null);
-    });
-  }
-  
-  /**
-   * Connect to wallet
+   * Connect to wallet - MOCK IMPLEMENTATION
    */
   async connect(): Promise<WalletInfo | null> {
     try {
-      // Check if MetaMask is installed
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
-        throw new Error('No Ethereum wallet found. Please install MetaMask or another wallet.');
-      }
-      
-      const ethereum = (window as any).ethereum;
-      
-      // Request account access
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      
-      // Create provider and signer
-      this.provider = new ethers.BrowserProvider(ethereum);
-      this.signer = await this.provider.getSigner();
-      
-      // Get chain ID
-      const network = await this.provider.getNetwork();
-      const chainId = Number(network.chainId);
-      
-      // Store wallet info
+      // Mock wallet connection
       this.walletInfo = {
-        address: accounts[0],
-        chainId,
+        address: '0x1234567890abcdef1234567890abcdef12345678',
+        chainId: NetworkIds.BASE_MAINNET,
         isConnected: true,
       };
-      
+
       // Emit connected event
       this.emitEvent(WalletEvents.CONNECTED, this.walletInfo);
-      
+
       return this.walletInfo;
-      
     } catch (error) {
       console.error('Error connecting to wallet:', error);
       this.analyticsService.trackError('wallet_connection_error', error as Error);
       return null;
     }
   }
-  
+
   /**
-   * Disconnect from wallet (note: this is not a standard function in web3,
-   * as wallets typically handle disconnection themselves)
+   * Disconnect from wallet
    */
   disconnect(): void {
     this.walletInfo = null;
     this.emitEvent(WalletEvents.DISCONNECTED, null);
   }
-  
+
   /**
    * Check if wallet is connected
    */
   isConnected(): boolean {
     return !!this.walletInfo?.isConnected;
   }
-  
+
   /**
-   * Get current provider
+   * Get current provider - MOCK IMPLEMENTATION
    */
-  getProvider(): ethers.BrowserProvider | null {
-    return this.provider;
+  getProvider(): any | null {
+    return null;
   }
-  
+
   /**
-   * Get current signer
+   * Get current signer - MOCK IMPLEMENTATION
    */
-  getSigner(): ethers.JsonRpcSigner | null {
-    return this.signer;
+  getSigner(): any | null {
+    return null;
   }
-  
+
   /**
    * Get current wallet address
    */
@@ -176,140 +111,35 @@ class WalletService {
     if (this.walletInfo?.address) {
       return this.walletInfo.address;
     }
-    
-    // If wallet info is null, try reconnecting silently (without user prompt)
-    try {
-      if (typeof window !== 'undefined' && (window as any).ethereum) {
-        const ethereum = (window as any).ethereum;
-        const accounts = await ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-          // User is already connected
-          await this.connect();
-          return this.walletInfo?.address || null;
-        }
-      }
-    } catch (error) {
-      console.error('Error checking wallet address:', error);
-    }
-    
     return null;
   }
-  
+
   /**
    * Get current chain ID
    */
   getChainId(): number | null {
     return this.walletInfo?.chainId || null;
   }
-  
+
   /**
-   * Switch network
+   * Switch network - MOCK IMPLEMENTATION
    * @param chainId Chain ID to switch to
    */
   async switchNetwork(chainId: number): Promise<boolean> {
     try {
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
-        return false;
+      // Mock network switch
+      if (this.walletInfo) {
+        this.walletInfo.chainId = chainId;
+        this.emitEvent(WalletEvents.CHAIN_CHANGED, chainId);
       }
-      
-      const ethereum = (window as any).ethereum;
-      const chainIdHex = `0x${chainId.toString(16)}`;
-      
-      try {
-        // Try switching to network
-        await ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: chainIdHex }],
-        });
-        return true;
-      } catch (error: any) {
-        // If network doesn't exist, add it
-        if (error.code === 4902) {
-          const networkDetails = this.getNetworkDetails(chainId);
-          if (networkDetails) {
-            await ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [networkDetails],
-            });
-            return true;
-          }
-        }
-        
-        throw error;
-      }
-      
+      return true;
     } catch (error) {
       console.error('Error switching network:', error);
       this.analyticsService.trackError('switch_network_error', error as Error);
       return false;
     }
   }
-  
-  /**
-   * Get network details for adding to wallet
-   * @param chainId Chain ID to get details for
-   */
-  private getNetworkDetails(chainId: number): any {
-    const chainIdHex = `0x${chainId.toString(16)}`;
-    
-    switch (chainId) {
-      case NetworkIds.BASE_MAINNET:
-        return {
-          chainId: chainIdHex,
-          chainName: 'Base Mainnet',
-          nativeCurrency: {
-            name: 'Ethereum',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          rpcUrls: ['https://mainnet.base.org'],
-          blockExplorerUrls: ['https://basescan.org'],
-        };
-        
-      case NetworkIds.BASE_SEPOLIA:
-        return {
-          chainId: chainIdHex,
-          chainName: 'Base Sepolia Testnet',
-          nativeCurrency: {
-            name: 'Ethereum',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          rpcUrls: ['https://sepolia.base.org'],
-          blockExplorerUrls: ['https://sepolia.basescan.org'],
-        };
-        
-      case NetworkIds.ARBITRUM:
-        return {
-          chainId: chainIdHex,
-          chainName: 'Arbitrum One',
-          nativeCurrency: {
-            name: 'Ethereum',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          rpcUrls: ['https://arb1.arbitrum.io/rpc'],
-          blockExplorerUrls: ['https://arbiscan.io'],
-        };
-        
-      case NetworkIds.ARBITRUM_GOERLI:
-        return {
-          chainId: chainIdHex,
-          chainName: 'Arbitrum Goerli Testnet',
-          nativeCurrency: {
-            name: 'Ethereum',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          rpcUrls: ['https://goerli-rollup.arbitrum.io/rpc'],
-          blockExplorerUrls: ['https://goerli.arbiscan.io'],
-        };
-        
-      default:
-        return null;
-    }
-  }
-  
+
   /**
    * Add event listener
    * @param event Event name
@@ -320,7 +150,7 @@ class WalletService {
     listeners.push(callback);
     this.eventListeners.set(event, listeners);
   }
-  
+
   /**
    * Remove event listener
    * @param event Event name
@@ -334,7 +164,7 @@ class WalletService {
       this.eventListeners.set(event, listeners);
     }
   }
-  
+
   /**
    * Emit event
    * @param event Event name
@@ -350,23 +180,20 @@ class WalletService {
       }
     });
   }
-  
+
   /**
-   * Sign message
+   * Sign message - MOCK IMPLEMENTATION
    * @param message Message to sign
    */
   async signMessage(message: string): Promise<string | null> {
     try {
-      if (!this.signer) {
-        throw new Error('Wallet not connected');
-      }
-      
-      const signature = await this.signer.signMessage(message);
+      // Mock signature
+      const signature = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef00";
       
       this.analyticsService.trackEvent('message_signed', {
         address: this.walletInfo?.address,
       });
-      
+
       return signature;
     } catch (error) {
       console.error('Error signing message:', error);
@@ -374,7 +201,7 @@ class WalletService {
       return null;
     }
   }
-  
+
   /**
    * Format address for display (shortens address)
    * @param address Address to format
