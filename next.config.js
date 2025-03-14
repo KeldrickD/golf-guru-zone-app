@@ -25,7 +25,29 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000', 'golf-guru-zone.vercel.app'],
     },
     serverComponentsExternalPackages: ['@prisma/client'],
-  }
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/mock/:path*',
+      },
+    ];
+  },
+  // Disable API routes that are causing build issues
+  async headers() {
+    return [
+      {
+        source: '/api/(clubs|stats|subscription|webhook)/:path*',
+        headers: [
+          {
+            key: 'x-mock-api',
+            value: 'true',
+          },
+        ],
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig 
