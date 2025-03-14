@@ -55,6 +55,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   goals         UserGoal[]
+  sharedContent SharedContent[]
 }
 
 model VerificationToken {
@@ -96,6 +97,7 @@ model Round {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   shots              Shot[]
+  sharedContent      SharedContent[]
 }
 
 model Shot {
@@ -136,4 +138,38 @@ model UserGoal {
   notes        String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  sharedContent SharedContent[]
+}
+
+// Shared Content Model for PDF links and social sharing
+model SharedContent {
+  id          String   @id @default(cuid())
+  shareId     String   @unique // Short, unique identifier for URLs
+  contentType String   // "round", "goal", "stats", etc.
+  title       String
+  description String?  @db.Text
+  
+  // References to content (one of these will be set)
+  roundId     String?
+  round       Round?   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  goalId      String?
+  goal        UserGoal? @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  
+  // For stats sharing
+  statsTimeframe String? // "last7days", "last30days", "year", etc.
+  
+  // For custom data
+  customData  Json?    // For any additional data needed for the shared content
+  
+  // Sharing settings
+  expiresAt   DateTime?
+  isPublic    Boolean  @default(true)
+  viewCount   Int      @default(0)
+  
+  // User who created the share
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

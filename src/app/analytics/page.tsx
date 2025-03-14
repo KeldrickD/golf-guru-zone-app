@@ -19,6 +19,8 @@ import { GoalSettingWidget } from '@/components/GoalSettingWidget';
 import { useToast } from '@/components/ui/useToast';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import ShareLinkGenerator from '@/components/ShareLinkGenerator';
+import GolfPerformanceReport from '@/components/pdf/GolfPerformanceReport';
 
 interface RoundStats {
   totalScore: number;
@@ -251,14 +253,88 @@ export default function AnalyticsPage() {
           
           <TabsContent value="visualizations" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <PerformanceHistoryChart className="md:col-span-2" />
-              <CourseHeatmapChart />
-              <MetricDetailChart />
+              <div className="md:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>Performance History</CardTitle>
+                        <CardDescription>Track your score trends over time</CardDescription>
+                      </div>
+                      <ShareLinkGenerator 
+                        contentType="stats" 
+                        title="My Golf Performance History"
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="h-[350px] p-6">
+                      <PerformanceHistoryChart />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle>Course Performance</CardTitle>
+                      <CardDescription>See which courses you play best on</CardDescription>
+                    </div>
+                    <ShareLinkGenerator 
+                      contentType="stats" 
+                      title="My Course Performance Analysis"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-[350px] p-6">
+                    <CourseHeatmapChart />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle>Metric Breakdown</CardTitle>
+                      <CardDescription>Analyze specific aspects of your game</CardDescription>
+                    </div>
+                    <ShareLinkGenerator 
+                      contentType="stats" 
+                      title="My Golf Metrics Breakdown"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-[350px] p-6">
+                    <MetricDetailChart />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
             
-            <div className="grid grid-cols-1 gap-6">
-              <StatsComparisonChart />
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Performance Comparison</CardTitle>
+                    <CardDescription>Compare your stats with average golfer data</CardDescription>
+                  </div>
+                  <ShareLinkGenerator 
+                    contentType="stats" 
+                    title="My Golf Performance Comparison"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="h-[350px] p-6">
+                  <StatsComparisonChart />
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="input">
@@ -369,9 +445,26 @@ export default function AnalyticsPage() {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button variant="outline" onClick={() => formRef.current?.reset()}>Reset</Button>
-                <Button onClick={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Save Round'}
-                </Button>
+                <div className="flex gap-2">
+                  {session && stats.totalScore > 0 && (
+                    <GolfPerformanceReport 
+                      data={{
+                        playerData: { 
+                          name: session.user?.name || 'Golf User',
+                        },
+                        roundData: {
+                          date: stats.date || today,
+                          totalScore: stats.totalScore,
+                          courseName: "Draft Round",
+                          par: 72, // Default par
+                        }
+                      }}
+                    />
+                  )}
+                  <Button onClick={handleSubmit} disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save Round'}
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -390,13 +483,58 @@ export default function AnalyticsPage() {
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <PerformanceHistoryChart className="h-full" />
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle>Extended Performance History</CardTitle>
+                  <ShareLinkGenerator 
+                    contentType="stats" 
+                    title="My Extended Golf Performance History"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="h-[400px] p-6">
+                  <PerformanceHistoryChart className="h-full" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <div>
-            <MetricDetailChart className="h-full" />
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle>Key Metrics</CardTitle>
+                  <ShareLinkGenerator 
+                    contentType="stats" 
+                    title="My Key Golf Metrics"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="h-[400px] p-6">
+                  <MetricDetailChart className="h-full" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <div className="md:col-span-2 lg:col-span-3">
-            <CourseHeatmapChart />
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle>Course Performance Map</CardTitle>
+                  <ShareLinkGenerator 
+                    contentType="stats" 
+                    title="My Golf Course Performance Map"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="h-[400px] p-6">
+                  <CourseHeatmapChart />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </Section>
