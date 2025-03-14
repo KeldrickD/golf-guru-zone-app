@@ -73,16 +73,87 @@
  
 @layer base {
   * {
-    @apply border-neutral-200;
-  }
-  .dark * {
-    @apply border-neutral-800;
+    @apply border-border;
   }
   body {
-    @apply bg-white text-slate-900;
+    @apply bg-background text-foreground;
   }
-  .dark body {
-    @apply bg-slate-900 text-slate-50;
+  
+  /* Mobile-friendly text sizing */
+  h1 {
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold;
+  }
+  h2 {
+    @apply text-xl sm:text-2xl md:text-3xl font-bold;
+  }
+  h3 {
+    @apply text-lg sm:text-xl font-semibold;
+  }
+  h4 {
+    @apply text-base sm:text-lg font-semibold;
+  }
+  
+  /* Better typography on small screens */
+  p {
+    @apply text-sm sm:text-base leading-relaxed;
+  }
+  
+  /* Touch-friendly interactive elements */
+  button, 
+  .button,
+  a.button,
+  [type="button"],
+  [type="submit"] {
+    @apply min-h-[2.5rem] sm:min-h-[2.75rem];
+  }
+  
+  /* Ensure proper spacing for form elements on mobile */
+  input,
+  select,
+  textarea {
+    @apply p-2 sm:p-2.5 text-sm sm:text-base;
+  }
+  
+  label {
+    @apply text-sm sm:text-base mb-1;
+  }
+}
+
+/* Extra-small text for mobile */
+.text-2xs {
+  font-size: 0.65rem;
+  line-height: 0.9rem;
+}
+
+/* Mobile-friendly containers with less padding */
+.container-mobile-friendly {
+  @apply px-3 sm:px-4 md:px-6;
+}
+
+/* Better touch targets for mobile */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+/* Responsive grid with better mobile defaults */
+.responsive-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6;
+}
+
+/* Mobile-friendly card padding */
+.card-mobile-friendly {
+  @apply p-3 sm:p-4 md:p-6;
+}
+
+/* Mobile optimization for buttons */
+.btn-mobile-friendly {
+  @apply text-sm sm:text-base py-2.5 sm:py-3 px-3 sm:px-4;
+}
+
+/* Enhanced hover for touch devices */
+@media (hover: hover) {
+  .hover-effect:hover {
+    @apply transition-transform transform scale-105;
   }
 }
 

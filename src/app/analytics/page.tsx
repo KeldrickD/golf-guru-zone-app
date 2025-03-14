@@ -110,22 +110,22 @@ export default function AnalyticsPage() {
       />
       
       <Section>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="w-full">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
             {/* Left side - Input form */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 order-2 lg:order-1">
               <Card className="shadow-md border-gray-100 dark:border-gray-800 overflow-hidden">
-                <CardHeader className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800">
+                <CardHeader className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6">
                   <div className="flex items-center gap-2">
                     <Activity className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-xl font-bold">Round Statistics</CardTitle>
+                    <CardTitle className="text-lg sm:text-xl font-bold">Round Statistics</CardTitle>
                   </div>
-                  <CardDescription className="text-base">
+                  <CardDescription className="text-sm sm:text-base">
                     Enter your latest round details for analysis
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-6 space-y-6">
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="date" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                         Round Date
@@ -175,9 +175,9 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="fairwaysHit" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Label htmlFor="fairwaysHit" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 text-sm sm:text-base">
                           Fairways Hit
                         </Label>
                         <Input
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="totalFairways" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Label htmlFor="totalFairways" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 text-sm sm:text-base">
                           Total Fairways
                         </Label>
                         <Input
@@ -206,10 +206,10 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="greensInRegulation" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                          Greens in Regulation
+                        <Label htmlFor="greensInRegulation" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 text-sm sm:text-base">
+                          Greens in Reg
                         </Label>
                         <Input
                           id="greensInRegulation"
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="totalGreens" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Label htmlFor="totalGreens" className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 text-sm sm:text-base">
                           Total Greens
                         </Label>
                         <Input
@@ -242,7 +242,7 @@ export default function AnalyticsPage() {
                       whileTap={{ scale: 0.98 }}
                       className="pt-2"
                     >
-                      <Button type="submit" className="w-full" disabled={loading}>
+                      <Button type="submit" className="w-full py-5 sm:py-6 text-base" disabled={loading}>
                         {loading ? 'Analyzing Your Round...' : 'Analyze My Game'}
                       </Button>
                     </motion.div>
@@ -252,14 +252,14 @@ export default function AnalyticsPage() {
               
               {/* Quick Tips Card */}
               <Card className="mt-6 bg-primary/5 dark:bg-primary/10 border-primary/20 shadow-md">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <PieChart className="h-5 w-5 text-primary" />
+                <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+                  <CardTitle className="text-base sm:text-lg font-medium flex items-center gap-2">
+                    <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     Stat Benchmarks
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 text-sm">
-                  <ul className="space-y-3">
+                <CardContent className="px-4 py-3 sm:p-4 text-xs sm:text-sm">
+                  <ul className="space-y-2 sm:space-y-3">
                     <li className="flex items-center justify-between">
                       <span>Pro Tour Putting Average:</span>
                       <span className="font-medium text-primary">28.5 putts</span>
@@ -282,36 +282,36 @@ export default function AnalyticsPage() {
             </div>
             
             {/* Right side - Performance Metrics & Analysis */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 order-1 lg:order-2">
               {/* Performance Metrics */}
               <Card className="shadow-md border-gray-100 dark:border-gray-800 overflow-hidden mb-6">
-                <CardHeader className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800">
+                <CardHeader className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-xl font-bold">Performance Metrics</CardTitle>
+                    <CardTitle className="text-lg sm:text-xl font-bold">Performance Metrics</CardTitle>
                   </div>
-                  <CardDescription className="text-base">
+                  <CardDescription className="text-sm sm:text-base">
                     Visual breakdown of your round statistics
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                     {/* Putts Performance */}
                     <Card className="shadow-sm">
-                      <CardHeader className="py-3 px-4">
-                        <CardTitle className="text-sm font-medium">Putting</CardTitle>
+                      <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Putting</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-4 text-center">
-                        <div className="flex flex-col items-center justify-center h-24">
-                          <span className="text-3xl font-bold">{stats.putts}</span>
-                          <span className="text-xs uppercase mt-1">Total Putts</span>
-                          <span className={cn("text-sm font-medium mt-2", puttsPerformance.color)}>
+                      <CardContent className="p-3 sm:p-4 text-center">
+                        <div className="flex flex-col items-center justify-center h-20 sm:h-24">
+                          <span className="text-2xl sm:text-3xl font-bold">{stats.putts}</span>
+                          <span className="text-2xs sm:text-xs uppercase mt-0.5 sm:mt-1">Total Putts</span>
+                          <span className={cn("text-xs sm:text-sm font-medium mt-1 sm:mt-2", puttsPerformance.color)}>
                             {puttsPerformance.label}
                           </span>
                         </div>
-                        <div className="mt-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5">
+                        <div className="mt-2 sm:mt-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 sm:h-2.5">
                           <motion.div 
-                            className={cn("h-2.5 rounded-full", {
+                            className={cn("h-2 sm:h-2.5 rounded-full", {
                               "bg-red-500": stats.putts > 42,
                               "bg-amber-500": stats.putts > 36 && stats.putts <= 42,
                               "bg-blue-500": stats.putts > 30 && stats.putts <= 36,
@@ -327,23 +327,23 @@ export default function AnalyticsPage() {
                     
                     {/* Fairways Hit Performance */}
                     <Card className="shadow-sm">
-                      <CardHeader className="py-3 px-4">
-                        <CardTitle className="text-sm font-medium">Fairways Hit</CardTitle>
+                      <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Fairways Hit</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-4 text-center">
-                        <div className="flex flex-col items-center justify-center h-24">
+                      <CardContent className="p-3 sm:p-4 text-center">
+                        <div className="flex flex-col items-center justify-center h-20 sm:h-24">
                           <div className="flex items-baseline">
-                            <span className="text-3xl font-bold">{stats.fairwaysHit}</span>
-                            <span className="text-lg text-gray-400 dark:text-gray-500 ml-1">/ {stats.totalFairways}</span>
+                            <span className="text-2xl sm:text-3xl font-bold">{stats.fairwaysHit}</span>
+                            <span className="text-base sm:text-lg text-gray-400 dark:text-gray-500 ml-1">/ {stats.totalFairways}</span>
                           </div>
-                          <span className="text-xs uppercase mt-1">{fairwaysPercentage}% Accuracy</span>
-                          <span className={cn("text-sm font-medium mt-2", fairwaysPerformance.color)}>
+                          <span className="text-2xs sm:text-xs uppercase mt-0.5 sm:mt-1">{fairwaysPercentage}% Accuracy</span>
+                          <span className={cn("text-xs sm:text-sm font-medium mt-1 sm:mt-2", fairwaysPerformance.color)}>
                             {fairwaysPerformance.label}
                           </span>
                         </div>
-                        <div className="mt-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5">
+                        <div className="mt-2 sm:mt-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 sm:h-2.5">
                           <motion.div 
-                            className={cn("h-2.5 rounded-full", {
+                            className={cn("h-2 sm:h-2.5 rounded-full", {
                               "bg-red-500": fairwaysPercentage < 30,
                               "bg-amber-500": fairwaysPercentage >= 30 && fairwaysPercentage < 50,
                               "bg-blue-500": fairwaysPercentage >= 50 && fairwaysPercentage < 70,
@@ -358,24 +358,24 @@ export default function AnalyticsPage() {
                     </Card>
                     
                     {/* GIR Performance */}
-                    <Card className="shadow-sm">
-                      <CardHeader className="py-3 px-4">
-                        <CardTitle className="text-sm font-medium">Greens in Regulation</CardTitle>
+                    <Card className="shadow-sm sm:col-span-2 md:col-span-1">
+                      <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Greens in Regulation</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-4 text-center">
-                        <div className="flex flex-col items-center justify-center h-24">
+                      <CardContent className="p-3 sm:p-4 text-center">
+                        <div className="flex flex-col items-center justify-center h-20 sm:h-24">
                           <div className="flex items-baseline">
-                            <span className="text-3xl font-bold">{stats.greensInRegulation}</span>
-                            <span className="text-lg text-gray-400 dark:text-gray-500 ml-1">/ {stats.totalGreens}</span>
+                            <span className="text-2xl sm:text-3xl font-bold">{stats.greensInRegulation}</span>
+                            <span className="text-base sm:text-lg text-gray-400 dark:text-gray-500 ml-1">/ {stats.totalGreens}</span>
                           </div>
-                          <span className="text-xs uppercase mt-1">{girPercentage}% Success</span>
-                          <span className={cn("text-sm font-medium mt-2", girPerformance.color)}>
+                          <span className="text-2xs sm:text-xs uppercase mt-0.5 sm:mt-1">{girPercentage}% Success</span>
+                          <span className={cn("text-xs sm:text-sm font-medium mt-1 sm:mt-2", girPerformance.color)}>
                             {girPerformance.label}
                           </span>
                         </div>
-                        <div className="mt-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5">
+                        <div className="mt-2 sm:mt-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 sm:h-2.5">
                           <motion.div 
-                            className={cn("h-2.5 rounded-full", {
+                            className={cn("h-2 sm:h-2.5 rounded-full", {
                               "bg-red-500": girPercentage < 20,
                               "bg-amber-500": girPercentage >= 20 && girPercentage < 40,
                               "bg-blue-500": girPercentage >= 40 && girPercentage < 65,
@@ -390,27 +390,27 @@ export default function AnalyticsPage() {
                     </Card>
                   </div>
                   
-                  <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-                    <h3 className="text-lg font-medium mb-4">Score Breakdown</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-3">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Score</p>
-                        <p className="text-2xl font-bold">{stats.totalScore}</p>
+                  <div className="mt-5 pt-5 sm:mt-6 sm:pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Score Breakdown</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-2.5 sm:p-3">
+                        <p className="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Score</p>
+                        <p className="text-xl sm:text-2xl font-bold">{stats.totalScore}</p>
                       </Card>
                       
-                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-3">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Putts Per Hole</p>
-                        <p className="text-2xl font-bold">{(stats.putts / 18).toFixed(1)}</p>
+                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-2.5 sm:p-3">
+                        <p className="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Putts Per Hole</p>
+                        <p className="text-xl sm:text-2xl font-bold">{(stats.putts / 18).toFixed(1)}</p>
                       </Card>
                       
-                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-3">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Non-Putting Strokes</p>
-                        <p className="text-2xl font-bold">{stats.totalScore - stats.putts}</p>
+                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-2.5 sm:p-3">
+                        <p className="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Non-Putting Strokes</p>
+                        <p className="text-xl sm:text-2xl font-bold">{stats.totalScore - stats.putts}</p>
                       </Card>
                       
-                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-3">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Date</p>
-                        <p className="text-lg font-bold">{stats.date ? new Date(stats.date).toLocaleDateString() : "-"}</p>
+                      <Card className="shadow-sm bg-gray-50 dark:bg-gray-800/50 text-center p-2.5 sm:p-3">
+                        <p className="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Date</p>
+                        <p className="text-base sm:text-lg font-bold">{stats.date ? new Date(stats.date).toLocaleDateString() : "-"}</p>
                       </Card>
                     </div>
                   </div>
@@ -425,17 +425,17 @@ export default function AnalyticsPage() {
                   transition={{ duration: 0.5 }}
                 >
                   <Card className="shadow-md border-gray-100 dark:border-gray-800 overflow-hidden">
-                    <CardHeader className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800">
+                    <CardHeader className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6">
                       <div className="flex items-center gap-2">
                         <BarChart className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl font-bold">AI Game Analysis</CardTitle>
+                        <CardTitle className="text-lg sm:text-xl font-bold">AI Game Analysis</CardTitle>
                       </div>
-                      <CardDescription className="text-base">
+                      <CardDescription className="text-sm sm:text-base">
                         Personalized insights and recommendations
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6">
-                      <div className="prose dark:prose-invert max-w-none">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="prose dark:prose-invert prose-sm sm:prose-base max-w-none">
                         <p className="whitespace-pre-line">{analysis}</p>
                       </div>
                     </CardContent>
@@ -443,13 +443,13 @@ export default function AnalyticsPage() {
                 </motion.div>
               ) : (
                 <Card className="bg-gray-50 dark:bg-gray-900/20 shadow-md border-gray-100 dark:border-gray-800">
-                  <CardContent className="p-10 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-4 text-gray-500 dark:text-gray-400">
-                      <BarChart className="h-16 w-16 mb-2 text-gray-300 dark:text-gray-600" />
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  <CardContent className="p-6 sm:p-10 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 text-gray-500 dark:text-gray-400">
+                      <BarChart className="h-12 w-12 sm:h-16 sm:w-16 mb-1 sm:mb-2 text-gray-300 dark:text-gray-600" />
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">
                         Enter your round details
                       </h3>
-                      <p className="max-w-md">
+                      <p className="max-w-md text-sm sm:text-base">
                         Fill out the form with your latest round statistics and click "Analyze My Game" to receive detailed AI-powered insights and improvement tips.
                       </p>
                     </div>

@@ -13,6 +13,7 @@ interface SectionProps {
   fullWidth?: boolean;
   darkBackground?: boolean;
   pattern?: boolean;
+  noPadding?: boolean;
 }
 
 const Section: React.FC<SectionProps> = ({
@@ -24,6 +25,7 @@ const Section: React.FC<SectionProps> = ({
   fullWidth = false,
   darkBackground = false,
   pattern = false,
+  noPadding = false,
 }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -53,7 +55,8 @@ const Section: React.FC<SectionProps> = ({
     <section 
       id={id}
       className={cn(
-        'py-12 sm:py-20 relative overflow-hidden',
+        noPadding ? '' : 'py-8 sm:py-12 md:py-16',
+        'relative overflow-hidden',
         darkBackground ? 'bg-gray-50 dark:bg-gray-900/50' : 'bg-white dark:bg-gray-900',
         className
       )}
@@ -62,10 +65,10 @@ const Section: React.FC<SectionProps> = ({
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-center opacity-50"></div>
       )}
       
-      <div className={cn('relative z-10', fullWidth ? 'container-fluid px-4' : 'container mx-auto px-4')}>
+      <div className={cn('relative z-10', fullWidth ? 'container-fluid px-3 sm:px-4' : 'container mx-auto px-3 sm:px-4')}>
         {(title || description) && (
           <motion.div 
-            className="text-center max-w-3xl mx-auto mb-12"
+            className="text-center max-w-full sm:max-w-2xl md:max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -73,7 +76,7 @@ const Section: React.FC<SectionProps> = ({
           >
             {title && (
               <motion.h2 
-                className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl mb-4"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-3 sm:mb-4"
                 variants={itemVariants}
               >
                 {title}
@@ -82,7 +85,7 @@ const Section: React.FC<SectionProps> = ({
             
             {description && (
               <motion.p 
-                className="text-lg text-gray-600 dark:text-gray-300"
+                className="text-base sm:text-lg text-gray-600 dark:text-gray-300"
                 variants={itemVariants}
               >
                 {description}
@@ -96,6 +99,7 @@ const Section: React.FC<SectionProps> = ({
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={containerVariants}
+          className="w-full"
         >
           {children}
         </motion.div>
