@@ -17,13 +17,14 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['ipfs.io'],
+    domains: ['ipfs.io', 'avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
   },
   // Configure dynamic routes
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'golf-guru-zone.vercel.app'],
     },
+    serverComponentsExternalPackages: ['@prisma/client'],
   }
 }
 

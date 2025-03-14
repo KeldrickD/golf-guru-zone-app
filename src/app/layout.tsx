@@ -6,7 +6,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/Toaster';
-import { SessionProvider } from "@/components/SessionProvider";
+import SessionProvider from "@/components/SessionProvider";
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
