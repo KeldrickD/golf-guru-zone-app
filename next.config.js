@@ -48,6 +48,10 @@ const nextConfig = {
       },
     ];
   },
+  // Disable static exports for API routes
+  output: 'standalone',
+  // Disable static generation
+  staticPageGenerationTimeout: 1000,
 }
 
 module.exports = nextConfig 
