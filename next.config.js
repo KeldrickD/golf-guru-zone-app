@@ -12,8 +12,8 @@ const nextConfig = {
     };
     return config;
   },
-  // Basic export configuration
-  output: 'export',
+  // Remove export configuration since it doesn't work with API routes
+  // output: 'export',
   images: {
     unoptimized: true,
   },
