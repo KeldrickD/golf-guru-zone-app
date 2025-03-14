@@ -208,68 +208,10 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Wallet connect button styles */
-.connect-button {
-  background-color: #16a34a;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s;
-  min-width: 150px;
-  cursor: pointer;
-  border: none;
-}
-
-.connect-button:hover {
-  background-color: #15803d;
-}
-
-.connect-button:active {
-  background-color: #166534;
-}
-
-.connect-button.loading {
-  opacity: 0.8;
-  cursor: wait;
-}
-
-.connected-button {
-  background-color: #1f2937;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 200px;
-  cursor: pointer;
-}
-
-.connected-button .address {
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.connected-button .disconnect {
-  margin-left: 8px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.connected-button:hover .disconnect {
-  opacity: 1;
-}
-
-.connect-error {
-  color: #ef4444;
-  font-size: 0.85rem;
-  margin-top: 4px;
-  text-align: center;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner {
@@ -280,10 +222,4 @@ input[type="number"] {
   border-radius: 50%;
   border-top-color: white;
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 } 

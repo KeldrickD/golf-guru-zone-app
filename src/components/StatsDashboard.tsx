@@ -1,263 +1,290 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import StatsService, { BetStats, CourseStats, PlayerStats } from '../services/statsService';
-import SubscriptionService, { SubscriptionTier } from '../services/subscriptionService';
-import WalletService from '../services/walletService';
+import { useSession } from '@/components/SessionProvider';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Button } from '@/components/ui/Button';
+import { Loader2, Calendar, BarChart4, LineChart, PieChart } from 'lucide-react';
+import { faker } from '@faker-js/faker';
+import { PerformanceTrends } from './PerformanceTrends';
 
-const StatsDashboard = () => {
-  const [betStats, setBetStats] = useState<BetStats | null>(null);
-  const [courseStats, setCourseStats] = useState<CourseStats[] | null>(null);
-  const [playerStats, setPlayerStats] = useState<PlayerStats[] | null>(null);
-  const [currentTier, setCurrentTier] = useState<SubscriptionTier>(SubscriptionTier.FREE);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overall' | 'courses' | 'players'>('overall');
-  const [isConnected, setIsConnected] = useState(false);
+const STAT_CATEGORIES = ['driving', 'approach', 'shortGame', 'putting'];
 
-  const statsService = StatsService.getInstance();
-  const subscriptionService = SubscriptionService.getInstance();
-  const walletService = WalletService.getInstance();
+// Generate some random stats for demo
+const generateStats = () => {
+  const roundCount = faker.number.int({ min: 15, max: 50 });
+  const handicap = faker.number.float({ min: 2, max: 24, precision: 0.1 });
+  const avgScore = faker.number.float({ min: 70, max: 95, precision: 0.1 });
+  const bestScore = faker.number.int({ min: 65, max: avgScore - 2 });
+  
+  const catStats = {};
+  STAT_CATEGORIES.forEach(cat => {
+    catStats[cat] = {
+      accuracy: faker.number.float({ min: 30, max: 80, precision: 0.1 }),
+      distance: faker.number.int({ min: 200, max: 300 }),
+      improvement: faker.number.float({ min: -10, max: 15, precision: 0.1 }),
+    };
+  });
+
+  return {
+    roundCount,
+    handicap,
+    avgScore,
+    bestScore,
+    categories: catStats,
+    lastRoundDate: faker.date.recent({ days: 14 }),
+  };
+};
+
+export function StatsDashboard() {
+  const { status } = useSession();
+  const [stats, setStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkConnectionAndLoadStats = async () => {
-      const connected = await walletService.isConnected();
-      setIsConnected(connected);
-
-      if (connected) {
-        const tier = await subscriptionService.getUserTier();
-        setCurrentTier(tier);
-        
-        if (tier !== SubscriptionTier.FREE) {
-          loadStats();
-        } else {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
+    // Simulate API call to get user stats
+    const fetchStats = async () => {
+      setIsLoading(true);
+      // Simulate network request
+      setTimeout(() => {
+        setStats(generateStats());
+        setIsLoading(false);
+      }, 1500);
     };
 
-    checkConnectionAndLoadStats();
-
-    window.addEventListener('walletConnected', () => {
-      setIsConnected(true);
-      checkConnectionAndLoadStats();
-    });
-
-    window.addEventListener('walletDisconnected', () => {
-      setIsConnected(false);
-      setCurrentTier(SubscriptionTier.FREE);
-      setBetStats(null);
-      setCourseStats(null);
-      setPlayerStats(null);
-    });
-
-    return () => {
-      window.removeEventListener('walletConnected', () => setIsConnected(true));
-      window.removeEventListener('walletDisconnected', () => setIsConnected(false));
-    };
-  }, []);
-
-  const loadStats = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Load overall bet stats
-      const stats = await statsService.getBetStats();
-      setBetStats(stats);
-      
-      // Load course stats
-      const courses = await statsService.getCourseStats();
-      setCourseStats(courses);
-      
-      // Load player stats (only available for Pro tier)
-      if (currentTier === SubscriptionTier.PRO) {
-        const players = await statsService.getPlayerStats();
-        setPlayerStats(players);
-      }
-    } catch (err: any) {
-      console.error('Error loading stats:', err);
-      setError(err.message || 'Failed to load statistics');
-    } finally {
-      setLoading(false);
+    // Only fetch stats when user is authenticated
+    if (status === 'authenticated') {
+      fetchStats();
+    } else if (status !== 'loading') {
+      setIsLoading(false);
     }
-  };
+  }, [status]);
 
-  if (!isConnected) {
+  if (status === 'loading' || isLoading) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-6 text-center">
-        <h2 className="text-2xl font-bold text-green-800 mb-4">Your Golf Betting Stats</h2>
-        <p className="text-gray-600 mb-4">Please connect your wallet to view your statistics.</p>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+        <p>Loading your golf stats...</p>
       </div>
     );
   }
 
-  if (currentTier === SubscriptionTier.FREE) {
+  if (status !== 'authenticated') {
     return (
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-green-800 mb-4">Your Golf Betting Stats</h2>
-        <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Premium Feature</h3>
-          <p className="text-gray-600 mb-4">
-            Detailed betting statistics are available with Premium and Pro subscriptions.
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Golf Stats</CardTitle>
+          <CardDescription>
+            Sign in to view your personal golf statistics and analytics
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center space-y-4 py-8">
+          <p className="text-muted-foreground text-center max-w-lg">
+            Track your rounds, analyze your performance, and get personalized recommendations to improve your game.
           </p>
-          <a
-            href="#subscription"
-            className="inline-block bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 transition"
-          >
-            Upgrade Your Subscription
-          </a>
-        </div>
-      </div>
+          <Button asChild>
+            <a href="/signin">Sign In to View Stats</a>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>No Stats Available</CardTitle>
+          <CardDescription>
+            You haven't recorded any rounds yet
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center space-y-4 py-8">
+          <p className="text-muted-foreground text-center max-w-lg">
+            Start by adding your first round to see statistics and performance analytics.
+          </p>
+          <Button>Record a Round</Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-green-800 mb-4">Your Golf Betting Stats</h2>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
-      
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === 'overall'
-              ? 'text-green-600 border-b-2 border-green-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          onClick={() => setActiveTab('overall')}
-        >
-          Overall Stats
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === 'courses'
-              ? 'text-green-600 border-b-2 border-green-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          onClick={() => setActiveTab('courses')}
-        >
-          By Course
-        </button>
-        {currentTier === SubscriptionTier.PRO && (
-          <button
-            className={`py-2 px-4 font-medium ${
-              activeTab === 'players'
-                ? 'text-green-600 border-b-2 border-green-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('players')}
-          >
-            By Player
-          </button>
-        )}
-      </div>
-      
-      {/* Loading state */}
-      {loading ? (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-          <p className="ml-2">Loading stats...</p>
-        </div>
-      ) : (
-        <>
-          {/* Overall Stats */}
-          {activeTab === 'overall' && betStats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500">Total Bets</h3>
-                <p className="text-2xl font-bold">{betStats.totalBets}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500">Win Rate</h3>
-                <p className="text-2xl font-bold">{(betStats.winRate * 100).toFixed(1)}%</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500">Total Wagered</h3>
-                <p className="text-2xl font-bold">${betStats.totalWagered.toFixed(2)}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500">Net Profit</h3>
-                <p className={`text-2xl font-bold ${betStats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ${betStats.netProfit.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          )}
-          
-          {/* Course Stats */}
-          {activeTab === 'courses' && courseStats && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr className="bg-gray-100 border-b">
-                    <th className="py-3 px-4 text-left">Course</th>
-                    <th className="py-3 px-4 text-center">Bets Played</th>
-                    <th className="py-3 px-4 text-center">Win Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {courseStats.map((course, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">{course.courseName}</td>
-                      <td className="py-3 px-4 text-center">{course.betsPlayed}</td>
-                      <td className="py-3 px-4 text-center">{(course.winRate * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          
-          {/* Player Stats */}
-          {activeTab === 'players' && playerStats && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr className="bg-gray-100 border-b">
-                    <th className="py-3 px-4 text-left">Player</th>
-                    <th className="py-3 px-4 text-center">Games</th>
-                    <th className="py-3 px-4 text-center">Wins</th>
-                    <th className="py-3 px-4 text-center">Losses</th>
-                    <th className="py-3 px-4 text-center">Win Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {playerStats.map((player, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">{player.displayName || player.playerAddress}</td>
-                      <td className="py-3 px-4 text-center">{player.gamesPlayed}</td>
-                      <td className="py-3 px-4 text-center">{player.wins}</td>
-                      <td className="py-3 px-4 text-center">{player.losses}</td>
-                      <td className="py-3 px-4 text-center">{(player.winRateVsYou * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          
-          {/* Refresh button */}
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={loadStats}
-              disabled={loading}
-              className="text-green-600 hover:text-green-800 transition"
-            >
-              Refresh Stats
-            </button>
+    <Card className="border-0 shadow-none">
+      <CardHeader className="px-0">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl">Your Golf Stats</CardTitle>
+            <CardDescription>
+              Track your performance and see your progress over time
+            </CardDescription>
           </div>
-        </>
-      )}
-    </div>
-  );
-};
+          <div className="flex items-center text-muted-foreground text-sm">
+            <Calendar className="h-4 w-4 mr-1" />
+            <span>Last round: {stats.lastRoundDate.toLocaleDateString()}</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="px-0 space-y-6">
+        {/* Key Stats Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="py-4">
+              <CardDescription>Handicap</CardDescription>
+            </CardHeader>
+            <CardContent className="py-0">
+              <div className="text-2xl font-bold">{stats.handicap.toFixed(1)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Last 20 rounds
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="py-4">
+              <CardDescription>Average Score</CardDescription>
+            </CardHeader>
+            <CardContent className="py-0">
+              <div className="text-2xl font-bold">{stats.avgScore.toFixed(1)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                All rounds ({stats.roundCount})
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="py-4">
+              <CardDescription>Best Score</CardDescription>
+            </CardHeader>
+            <CardContent className="py-0">
+              <div className="text-2xl font-bold">{stats.bestScore}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Season best
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="py-4">
+              <CardDescription>Rounds Played</CardDescription>
+            </CardHeader>
+            <CardContent className="py-0">
+              <div className="text-2xl font-bold">{stats.roundCount}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                This season
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-export default StatsDashboard; 
+        {/* Performance Trends */}
+        <Tabs defaultValue="trends">
+          <TabsList className="mb-4">
+            <TabsTrigger value="trends" className="gap-1">
+              <LineChart className="h-4 w-4" />
+              <span>Trends</span>
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="gap-1">
+              <BarChart4 className="h-4 w-4" />
+              <span>Categories</span>
+            </TabsTrigger>
+            <TabsTrigger value="breakdown" className="gap-1">
+              <PieChart className="h-4 w-4" />
+              <span>Breakdown</span>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="trends" className="mt-0">
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Trends</CardTitle>
+                <CardDescription>
+                  Your progress over the last 10 rounds
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <PerformanceTrends />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="categories" className="mt-0">
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance by Category</CardTitle>
+                <CardDescription>
+                  Breakdown of your game by area
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {Object.entries(stats.categories).map(([category, data]) => (
+                    <div key={category} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium capitalize">{category}</h4>
+                        <span className={`text-xs ${data.improvement > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {data.improvement > 0 ? '+' : ''}{data.improvement}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-primary rounded-full" 
+                          style={{ width: `${data.accuracy}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Accuracy: {data.accuracy}%</span>
+                        {category === 'driving' && (
+                          <span>Avg. Distance: {data.distance} yds</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="breakdown" className="mt-0">
+            <Card>
+              <CardHeader>
+                <CardTitle>Score Breakdown</CardTitle>
+                <CardDescription>
+                  Distribution of scoring elements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center py-4">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-6">
+                      This chart shows the proportion of strokes gained or lost in each category
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
+                        <span>Driving: 32%</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-green-500 mr-2" />
+                        <span>Approach: 28%</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2" />
+                        <span>Short Game: 15%</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-red-500 mr-2" />
+                        <span>Putting: 25%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+} 

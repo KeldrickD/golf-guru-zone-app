@@ -25,6 +25,8 @@ import { useSession } from '@/components/SessionProvider';
 import { useSubscription } from '@/hooks/useSubscription';
 import { motion } from 'framer-motion';
 import { useTheme } from './ThemeProvider';
+import LanguageSelector from './LanguageSelector';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface NavigationItem {
   name: string;
@@ -74,6 +76,7 @@ const navigationItems: NavigationItem[] = [
 ];
 
 const Navigation = () => {
+  const { t } = useLanguage();
   const pathname = usePathname() || '';
   const { session, status } = useSession();
   const { tier } = useSubscription();
@@ -127,8 +130,15 @@ const Navigation = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
+  // Translated navigation items
+  const translatedNavItems = navigationItems.map(item => ({
+    ...item,
+    name: t(`navigation.${item.href.split('/')[1] || 'home'}`),
+    description: t(`navigation.${item.href.split('/')[1] || 'home'}Description`, { defaultValue: item.description })
+  }));
+
   // Filter navigation items based on auth status
-  const filteredNavItems = navigationItems.filter(item => 
+  const filteredNavItems = translatedNavItems.filter(item => 
     !item.requiresAuth || (item.requiresAuth && session)
   );
 
@@ -184,7 +194,7 @@ const Navigation = () => {
                     <span>{item.name}</span>
                     {showProBadge && (
                       <Badge variant="secondary" className="ml-1 text-xs">
-                        PRO
+                        {t('common.pro')}
                       </Badge>
                     )}
                   </Link>
@@ -196,7 +206,7 @@ const Navigation = () => {
                 className="group relative flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:text-primary dark:text-gray-200 dark:hover:text-primary"
               >
                 <span className="absolute inset-0 rounded-md -z-10 transition-colors group-hover:bg-gray-100 dark:group-hover:bg-gray-800/40"></span>
-                <span>Pricing</span>
+                <span>{t('navigation.pricing')}</span>
               </Link>
             </div>
 
@@ -209,6 +219,9 @@ const Navigation = () => {
                   <span className="text-xs font-medium">Offline</span>
                 </div>
               )}
+
+              {/* Language Selector */}
+              <LanguageSelector />
 
               {/* Search Button */}
               <Button 
@@ -242,7 +255,7 @@ const Navigation = () => {
                   size="sm" 
                   className="rounded-full px-4 ml-2 shadow-sm hover:shadow transition-shadow"
                 >
-                  Sign In
+                  {t('auth.signIn')}
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">
@@ -370,7 +383,7 @@ const Navigation = () => {
                   </div>
                   {showProBadge && (
                     <Badge variant="secondary" className="ml-auto">
-                      PRO
+                      {t('common.pro')}
                     </Badge>
                   )}
                 </Link>
@@ -386,7 +399,7 @@ const Navigation = () => {
                 <Trophy className="h-5 w-5" />
               </div>
               <div className="flex flex-col flex-1">
-                <span className="font-medium">Pricing</span>
+                <span className="font-medium">{t('navigation.pricing')}</span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">View our subscription plans</span>
               </div>
             </Link>
@@ -411,7 +424,7 @@ const Navigation = () => {
           <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800/20">
             {!session ? (
               <Button onClick={() => { /* Mock sign in */ }} className="w-full rounded-xl py-5 text-base">
-                Sign In with Google
+                {t('auth.signInWith')} Google
               </Button>
             ) : (
               <div className="space-y-3">
@@ -434,11 +447,11 @@ const Navigation = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <Link href="/account" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full py-5 rounded-xl text-base">
-                      Account
+                      {t('navigation.account')}
                     </Button>
                   </Link>
                   <Button variant="default" onClick={() => { /* Mock sign out */ }} className="w-full py-5 rounded-xl text-base">
-                    Sign Out
+                    {t('navigation.logout')}
                   </Button>
                 </div>
               </div>
@@ -466,7 +479,7 @@ const Navigation = () => {
               <Search className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
               <input 
                 type="text" 
-                placeholder="Search for courses, equipment, or rules..." 
+                placeholder={t('common.searchPlaceholder')}
                 className="flex-1 bg-transparent border-none outline-none text-base sm:text-lg text-gray-700 dark:text-gray-200" 
                 autoFocus
               />
