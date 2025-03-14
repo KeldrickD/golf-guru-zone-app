@@ -12,7 +12,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
@@ -24,6 +23,8 @@ import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { PieChart as PieChartIcon, BarChart3, Activity } from 'lucide-react';
 import useSWR from 'swr';
+import { ResponsiveChartContainer } from './ResponsiveChartContainer';
+import { ResponsiveTooltip } from '@/components/ui/ResponsiveTooltip';
 
 // Define types for our data
 interface ClubDistance {
@@ -48,144 +49,207 @@ interface PerformanceRadar {
 // API fetcher function for SWR
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-medium">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={`item-${index}`} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}: {entry.value} {entry.unit}
-          </p>
-        ))}
-      </div>
-    );
-  }
-
-  return null;
-};
-
 const ClubDistancesChart = ({ data }: { data: ClubDistance[] }) => {
   return (
-    <div className="h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={data}
-          margin={{ top: 20, right: 20, left: 20, bottom: 60 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-          <XAxis 
-            dataKey="club" 
-            tick={{ fontSize: 12 }} 
-            angle={-45} 
-            textAnchor="end"
-            height={60}
-          />
-          <YAxis 
-            label={{ value: 'Distance (yards)', angle: -90, position: 'insideLeft', dy: 50, fontSize: 12 }}
-            domain={[0, 300]}
-          />
-          <Tooltip 
-            content={(props) => {
-              if (props.active && props.payload && props.payload.length) {
-                const data = props.payload[0].payload;
-                return (
-                  <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium">{data.club}</p>
-                    <p className="text-sm text-blue-500">Avg: {data.avgDistance} yards</p>
-                    <p className="text-sm text-gray-500">Range: {data.minDistance || '-'} - {data.maxDistance || '-'} yards</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Bar
-            dataKey="avgDistance"
-            fill="#3b82f6"
-            barSize={30}
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveChartContainer
+      aspectRatio={{ desktop: 2, tablet: 1.5, mobile: 0.8 }}
+      minHeight={300}
+      maxHeight={500}
+    >
+      <BarChart
+        data={data}
+        margin={{ top: 20, right: 10, left: 10, bottom: 60 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+        <XAxis 
+          dataKey="club" 
+          tick={{ fontSize: 10 }} 
+          angle={-45} 
+          textAnchor="end"
+          height={60}
+          tickLine={false}
+        />
+        <YAxis 
+          label={{ 
+            value: 'Yards', 
+            angle: -90, 
+            position: 'insideLeft', 
+            dy: 50, 
+            fontSize: 12,
+            offset: -5
+          }}
+          domain={[0, 'auto']}
+          tick={{ fontSize: 10 }}
+          tickLine={false}
+          axisLine={false}
+        />
+        <Tooltip 
+          content={(props) => {
+            if (props.active && props.payload && props.payload.length) {
+              const data = props.payload[0].payload;
+              return (
+                <ResponsiveTooltip
+                  {...props}
+                  labelFormatter={() => data.club}
+                  contentFormatter={() => (
+                    <>
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
+                        <span className="font-medium text-blue-500">Avg:</span>
+                        <span>{data.avgDistance} yards</span>
+                      </div>
+                      {(data.minDistance || data.maxDistance) && (
+                        <div className="flex items-center justify-between text-xs sm:text-sm mt-1">
+                          <span className="font-medium text-gray-500">Range:</span>
+                          <span>{data.minDistance || '-'} - {data.maxDistance || '-'} yards</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                />
+              );
+            }
+            return null;
+          }}
+        />
+        <Legend 
+          wrapperStyle={{ paddingTop: 10, fontSize: '0.75rem' }}
+          iconSize={8}
+        />
+        <Bar
+          dataKey="avgDistance"
+          fill="#3b82f6"
+          barSize={20}
+          radius={[4, 4, 0, 0]}
+          name="Avg Distance (yards)"
+        />
+      </BarChart>
+    </ResponsiveChartContainer>
   );
 };
 
 const ScoringBreakdownChart = ({ data }: { data: ScoringBreakdown[] }) => {
   return (
-    <div className="h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip 
-            content={(props) => {
-              if (props.active && props.payload && props.payload.length) {
-                const data = props.payload[0].payload;
-                return (
-                  <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium" style={{ color: data.color }}>{data.name}</p>
-                    <p className="text-sm">Count: {data.value}</p>
-                    <p className="text-sm">Percentage: {((data.value / data.reduce((acc: number, curr: ScoringBreakdown) => acc + curr.value, 0)) * 100).toFixed(1)}%</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Legend layout="horizontal" verticalAlign="bottom" align="center" />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveChartContainer
+      aspectRatio={{ desktop: 1.5, tablet: 1.2, mobile: 1 }}
+      minHeight={300}
+      maxHeight={400}
+    >
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          outerRadius="70%"
+          fill="#8884d8"
+          dataKey="value"
+          label={({ name, percent }) => 
+            window.innerWidth < 640 
+              ? `${(percent * 100).toFixed(0)}%` 
+              : `${name} ${(percent * 100).toFixed(0)}%`
+          }
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          content={(props) => {
+            if (props.active && props.payload && props.payload.length) {
+              const data = props.payload[0].payload;
+              const total = props.payload.reduce((sum, entry) => sum + entry.payload.value, 0);
+              const percentage = ((data.value / total) * 100).toFixed(1);
+              
+              return (
+                <ResponsiveTooltip
+                  {...props}
+                  labelFormatter={() => data.name}
+                  contentFormatter={() => (
+                    <>
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
+                        <span className="font-medium">Count:</span>
+                        <span>{data.value}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs sm:text-sm mt-1">
+                        <span className="font-medium">Percentage:</span>
+                        <span>{percentage}%</span>
+                      </div>
+                    </>
+                  )}
+                  wrapperClassName="border-l-4"
+                  labelClassName="font-bold"
+                  style={{ borderLeftColor: data.color }}
+                />
+              );
+            }
+            return null;
+          }}
+        />
+        <Legend 
+          layout="horizontal" 
+          verticalAlign="bottom" 
+          align="center"
+          wrapperStyle={{ paddingTop: 10, fontSize: '0.75rem' }}
+          iconSize={8}
+        />
+      </PieChart>
+    </ResponsiveChartContainer>
   );
 };
 
 const PerformanceRadarChart = ({ data }: { data: PerformanceRadar[] }) => {
   return (
-    <div className="h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-          <PolarGrid strokeDasharray="3 3" />
-          <PolarAngleAxis dataKey="metric" tick={{ fontSize: 12 }} />
-          <PolarRadiusAxis angle={30} domain={[0, 100]} />
-          <Radar
-            name="Your Performance"
-            dataKey="value"
-            stroke="#8884d8"
-            fill="#8884d8"
-            fillOpacity={0.6}
-          />
-          <Tooltip 
-            content={(props) => {
-              if (props.active && props.payload && props.payload.length) {
-                const data = props.payload[0].payload;
-                return (
-                  <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium">{data.metric}</p>
-                    <p className="text-sm text-purple-500">Score: {data.value}/100</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Legend />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveChartContainer
+      aspectRatio={{ desktop: 1.5, tablet: 1.2, mobile: 1 }}
+      minHeight={300}
+      maxHeight={400}
+    >
+      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+        <PolarGrid strokeDasharray="3 3" />
+        <PolarAngleAxis 
+          dataKey="metric" 
+          tick={{ fontSize: 10 }}
+        />
+        <PolarRadiusAxis 
+          angle={30} 
+          domain={[0, 100]} 
+          tick={{ fontSize: 10 }}
+        />
+        <Radar
+          name="Your Performance"
+          dataKey="value"
+          stroke="#8884d8"
+          fill="#8884d8"
+          fillOpacity={0.6}
+        />
+        <Tooltip 
+          content={(props) => {
+            if (props.active && props.payload && props.payload.length) {
+              const data = props.payload[0].payload;
+              return (
+                <ResponsiveTooltip
+                  {...props}
+                  labelFormatter={() => data.metric}
+                  contentFormatter={() => (
+                    <>
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
+                        <span className="font-medium text-purple-500">Score:</span>
+                        <span>{data.value}/100</span>
+                      </div>
+                    </>
+                  )}
+                />
+              );
+            }
+            return null;
+          }}
+        />
+        <Legend 
+          wrapperStyle={{ paddingTop: 10, fontSize: '0.75rem' }}
+          iconSize={8}
+        />
+      </RadarChart>
+    </ResponsiveChartContainer>
   );
 };
 
@@ -267,16 +331,27 @@ export default function MetricDetailChart({ className }: MetricDetailChartProps)
         </div>
       </CardHeader>
       
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-2 sm:p-4">
         {isLoading ? (
-          <div className="flex items-center justify-center h-60">
+          <div className="flex items-center justify-center h-60 sm:h-80">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : hasError ? (
           <div className="text-center py-10">
             <p className="text-red-500 dark:text-red-400">Error loading data</p>
             <Button 
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (activeChart === 'clubDistances') {
+                  // @ts-ignore
+                  clubsData.mutate();
+                } else if (activeChart === 'scoringBreakdown') {
+                  // @ts-ignore
+                  scoringData.mutate();
+                } else {
+                  // @ts-ignore
+                  radarData.mutate();
+                }
+              }}
               variant="outline"
               size="sm"
               className="mt-2"
@@ -285,7 +360,7 @@ export default function MetricDetailChart({ className }: MetricDetailChartProps)
             </Button>
           </div>
         ) : (
-          <>
+          <div className="mt-2">
             {activeChart === 'clubDistances' && clubsData && (
               <ClubDistancesChart data={clubsData.clubDistances} />
             )}
@@ -293,39 +368,27 @@ export default function MetricDetailChart({ className }: MetricDetailChartProps)
               <ScoringBreakdownChart data={scoringData.scoringBreakdown} />
             )}
             {activeChart === 'performanceRadar' && radarData && (
-              <PerformanceRadarChart data={radarData.performanceRadar} />
+              <PerformanceRadarChart data={radarData.performance} />
             )}
             
-            <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-2 text-sm">
               {activeChart === 'clubDistances' && (
-                <p>Club distances based on your recorded shots. This data helps you make more informed club selections on the course.
-                  {clubsData?.isDefault && (
-                    <span className="block mt-2 text-amber-500 dark:text-amber-400">
-                      This is sample data. Add your club distances to see personalized data.
-                    </span>
-                  )}
+                <p className="text-gray-600 dark:text-gray-300">
+                  This chart shows your average distances with each club. Use this data to make better club selections on the course.
                 </p>
               )}
               {activeChart === 'scoringBreakdown' && (
-                <p>Your scoring breakdown from your recent rounds. Focus on reducing doubles and maximizing par opportunities.
-                  {scoringData?.isDefault && (
-                    <span className="block mt-2 text-amber-500 dark:text-amber-400">
-                      This is sample data. Add detailed round information to see your personal scoring breakdown.
-                    </span>
-                  )}
+                <p className="text-gray-600 dark:text-gray-300">
+                  This chart breaks down your scoring patterns. Understanding where your strokes are coming from can help you focus practice time.
                 </p>
               )}
               {activeChart === 'performanceRadar' && (
-                <p>Performance radar showing your strengths and weaknesses compared to your target handicap. Scrambling and putting are your current strengths.
-                  {radarData?.isDefault && (
-                    <span className="block mt-2 text-amber-500 dark:text-amber-400">
-                      This is sample data. Add rounds to see your actual performance metrics.
-                    </span>
-                  )}
+                <p className="text-gray-600 dark:text-gray-300">
+                  The radar chart shows your performance across key metrics compared to your potential. Higher scores indicate stronger areas of your game.
                 </p>
               )}
             </div>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

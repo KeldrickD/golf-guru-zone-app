@@ -1,0 +1,86 @@
+/* Mobile-friendly chart styles */
+
+/* Make axis labels more readable on small screens */
+@media (max-width: 639px) {
+  .recharts-cartesian-axis-tick-value tspan {
+    font-size: 10px;
+  }
+  
+  /* Reduce tick count on small screens */
+  .recharts-cartesian-axis-tick:nth-child(odd) {
+    display: none;
+  }
+  
+  /* Better spacing for legends */
+  .recharts-default-legend {
+    margin-top: 5px !important;
+    padding: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .recharts-legend-item {
+    margin-left: 0 !important;
+    margin-right: 8px !important;
+  }
+  
+  /* Better vertical alignment for bars */
+  .recharts-bar-rectangle {
+    transform: translateY(-2px);
+  }
+}
+
+/* Add padding around the chart area */
+.recharts-wrapper {
+  padding: 8px;
+}
+
+/* Make sure tooltip stays on screen */
+.recharts-tooltip-wrapper {
+  max-width: 90vw;
+  z-index: 1000 !important;
+}
+
+/* Make radar charts more readable */
+.recharts-polar-angle-axis-tick-value {
+  font-size: 10px;
+}
+
+/* Improve pie chart labels */
+.recharts-pie-label-text {
+  font-size: 10px;
+}
+
+/* Make legend items smaller on mobile */
+@media (max-width: 639px) {
+  .recharts-legend-item-text {
+    font-size: 10px;
+  }
+  
+  .recharts-legend-item {
+    padding: 0 4px;
+  }
+}
+
+/* Prevent label overflow */
+.recharts-text.recharts-label,
+.recharts-text.recharts-cartesian-axis-tick-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Add responsive scaling for the entire chart container */
+.chart-container {
+  width: 100%;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+/* Add responsive styling for bar charts */
+@media (max-width: 639px) {
+  .recharts-bar-rectangles {
+    transform: scaleX(0.9) translateX(5%);
+  }
+} 

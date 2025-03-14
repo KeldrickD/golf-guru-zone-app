@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -18,6 +17,8 @@ import { motion } from 'framer-motion';
 import { PersonStanding, Users } from 'lucide-react';
 import useSWR from 'swr';
 import { FilterControls, FilterOptions } from '../FilterControls';
+import { ResponsiveChartContainer } from './ResponsiveChartContainer';
+import { ResponsiveTooltip } from '@/components/ui/ResponsiveTooltip';
 
 // Types for stats
 interface UserStats {
@@ -36,28 +37,6 @@ interface ComparisonData {
 
 // API fetcher function for SWR
 const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-// Custom tooltip
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-medium">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="flex items-center gap-2 text-sm">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            ></div>
-            <span>{entry.name}: {entry.value}</span> 
-            {entry.dataKey === 'fairwayHitPercentage' || entry.dataKey === 'girPercentage' ? '%' : ''}
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
 
 interface StatsComparisonChartProps {
   className?: string;
@@ -133,6 +112,14 @@ export default function StatsComparisonChart({ className }: StatsComparisonChart
       ? metric.user < metric.global
       : metric.user > metric.global;
   };
+
+  // Format value for display in tooltip
+  const formatValue = (value: number, dataKey: string) => {
+    if (dataKey === 'fairwayHitPercentage' || dataKey === 'girPercentage') {
+      return `${value.toFixed(1)}%`;
+    }
+    return value.toFixed(1);
+  };
   
   return (
     <Card className={`shadow-md border-gray-100 dark:border-gray-800 overflow-hidden ${className}`}>
@@ -157,12 +144,14 @@ export default function StatsComparisonChart({ className }: StatsComparisonChart
               {showComparison ? (
                 <>
                   <PersonStanding className="h-4 w-4" />
-                  <span>Hide Comparison</span>
+                  <span className="hidden sm:inline">Hide Comparison</span>
+                  <span className="sm:hidden">Hide</span>
                 </>
               ) : (
                 <>
                   <Users className="h-4 w-4" />
-                  <span>Show Comparison</span>
+                  <span className="hidden sm:inline">Show Comparison</span>
+                  <span className="sm:hidden">Compare</span>
                 </>
               )}
             </Button>
@@ -176,9 +165,9 @@ export default function StatsComparisonChart({ className }: StatsComparisonChart
         <FilterControls onFilterChange={handleFilterChange} className="mt-4" />
       </CardHeader>
       
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-2 sm:p-4">
         {isLoading ? (
-          <div className="flex items-center justify-center h-80">
+          <div className="flex items-center justify-center h-60 sm:h-80">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : error ? (
@@ -195,99 +184,124 @@ export default function StatsComparisonChart({ className }: StatsComparisonChart
           </div>
         ) : (
           <>
-            <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Bar 
-                    dataKey="user" 
-                    name="Your Stats" 
-                    fill="#3b82f6" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                  {showComparison && (
-                    <Bar 
-                      dataKey="global" 
-                      name="Average Golfer" 
-                      fill="#9ca3af" 
-                      radius={[4, 4, 0, 0]}
+            {/* Replace ResponsiveContainer with our custom ResponsiveChartContainer */}
+            <ResponsiveChartContainer
+              aspectRatio={{ desktop: 2, tablet: 1.5, mobile: 0.8 }}
+              minHeight={300}
+              maxHeight={500}
+            >
+              <BarChart
+                data={chartData}
+                margin={{ 
+                  top: 20, 
+                  right: 10, 
+                  left: 10, 
+                  bottom: 40 
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis 
+                  dataKey="name" 
+                  height={60}
+                  tick={{ fontSize: 12 }}
+                  tickLine={false}
+                  angle={-45}
+                  textAnchor="end"
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickCount={5}
+                />
+                <Tooltip 
+                  content={(props) => (
+                    <ResponsiveTooltip 
+                      {...props}
+                      labelFormatter={(label) => `${label}`}
+                      contentFormatter={(entry) => (
+                        <div className="flex items-center justify-between w-full text-xs sm:text-sm">
+                          <span className="font-medium" style={{ color: entry.color }}>
+                            {entry.name}:
+                          </span>
+                          <span className="ml-2">
+                            {formatValue(entry.value, entry.dataKey)}
+                          </span>
+                        </div>
+                      )}
                     />
-                  )}
-                  {/* Add reference lines for the first two metrics (lower is better) */}
-                  {showComparison && chartData.map((entry, index) => (
-                    entry.lowerIsBetter && userIsBetter(entry) && (
-                      <ReferenceLine 
-                        key={`ref-${index}`}
-                        x={entry.name} 
-                        stroke="#22c55e" 
-                        strokeDasharray="3 3"
-                        isFront={true}
-                      />
-                    )
-                  ))}
-                  {/* Add reference lines for the last two metrics (higher is better) */}
-                  {showComparison && chartData.map((entry, index) => (
-                    !entry.lowerIsBetter && userIsBetter(entry) && (
-                      <ReferenceLine 
-                        key={`ref-${index}`}
-                        x={entry.name} 
-                        stroke="#22c55e" 
-                        strokeDasharray="3 3"
-                        isFront={true}
-                      />
-                    )
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                  )} 
+                />
+                <Legend 
+                  wrapperStyle={{ 
+                    paddingTop: 10,
+                    fontSize: '0.875rem'
+                  }}
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                />
+                <Bar 
+                  dataKey="user" 
+                  name="Your Stats" 
+                  fill="#3b82f6" 
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={50}
+                />
+                {showComparison && (
+                  <Bar 
+                    dataKey="global" 
+                    name="Average Golfer" 
+                    fill="#9ca3af" 
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={50}
+                  />
+                )}
+                {/* Add reference lines for metrics where user is better */}
+                {showComparison && chartData.map((entry, index) => (
+                  userIsBetter(entry) && (
+                    <ReferenceLine 
+                      key={`ref-${index}`}
+                      x={entry.name} 
+                      stroke="#22c55e" 
+                      strokeDasharray="3 3"
+                      isFront={true}
+                    />
+                  )
+                ))}
+              </BarChart>
+            </ResponsiveChartContainer>
             
-            <div className="mt-6">
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                <h4 className="font-medium mb-2">Performance Insights:</h4>
-                <ul className="space-y-2 pl-5 list-disc">
-                  {chartData.map((stat, index) => {
-                    if (!showComparison || !stat.global) return null;
-                    
-                    const isBetter = userIsBetter(stat);
-                    const difference = stat.lowerIsBetter 
-                      ? stat.global - stat.user 
-                      : stat.user - stat.global;
-                    
-                    const percentDiff = Math.abs(Math.round(difference * 100) / 100);
-                    
-                    return (
-                      <li key={index} className={isBetter ? 'text-green-500 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'}>
-                        <span className="font-medium">{stat.name}:</span> {isBetter 
-                          ? `You're outperforming the average by ${percentDiff}${stat.unit}` 
-                          : `You're ${percentDiff}${stat.unit} behind the average`}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-              
-              {data?.isDefault && (
-                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-md text-sm">
-                  <p className="font-medium">Sample Data</p>
-                  <p className="mt-1">This is sample comparison data. Add your rounds in the Analytics page to see your actual performance comparison.</p>
-                </div>
-              )}
-              
-              <div className="mt-4 text-xs text-gray-500">
-                Based on {showComparison && (
-                  <span>comparison between your {data?.userStats.roundCount} rounds and {data?.globalStats.roundCount} rounds from all users</span>
-                )}
-                {!showComparison && (
-                  <span>your {data?.userStats.roundCount} rounds</span>
-                )}
-              </div>
+            {/* Legend */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+              {chartData.map((stat, index) => {
+                const isBetter = userIsBetter(stat);
+                return (
+                  <div 
+                    key={index} 
+                    className={`
+                      p-2 rounded-md 
+                      flex items-center justify-between
+                      ${isBetter ? 'bg-green-50 dark:bg-green-900/20' : 'bg-gray-50 dark:bg-gray-800/30'}
+                    `}
+                  >
+                    <div className="font-medium">{stat.name}</div>
+                    <div className="flex items-center">
+                      <span className={`text-blue-600 dark:text-blue-400 font-semibold`}>
+                        {stat.user.toFixed(1)}{stat.unit}
+                      </span>
+                      {showComparison && (
+                        <>
+                          <span className="mx-1 text-gray-500">vs</span>
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {stat.global?.toFixed(1)}{stat.unit}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </>
         )}

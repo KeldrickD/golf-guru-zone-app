@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import './globals.css';
+import '@/styles/globals.css';
+import '@/styles/rtl.css';
+import '@/styles/mobile-charts.css';
 import './mobile.css';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -8,6 +10,8 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/Toaster';
 import SessionProvider from "@/components/SessionProvider";
 import Script from 'next/script';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -39,11 +43,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -60,22 +64,35 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/splash/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
         <link rel="apple-touch-startup-image" href="/splash/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
       </head>
-      <body className={inter.className}>
-        <SessionProvider>
+      <body className={cn('min-h-screen font-sans antialiased', inter.className)}>
+        <LanguageProvider>
           <ThemeProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navigation />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-              <Toaster />
-            </div>
+            <SessionProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Navigation />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+                <Toaster />
+              </div>
+            </SessionProvider>
           </ThemeProvider>
-        </SessionProvider>
+        </LanguageProvider>
         
         {/* Service worker registration script */}
-        <Script src="/pwa.js" strategy="lazyOnload" />
+        <Script
+          id="register-service-worker"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/service-worker.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

@@ -10,18 +10,18 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
   Legend,
   Area,
   AreaChart,
   ReferenceArea,
   ReferenceLine,
 } from "recharts";
-import { CustomTooltip } from "@/components/ui/CustomTooltip";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { StatisticalInsights } from "./StatisticalInsights";
 import DrilldownModal from "@/components/DrilldownModal";
+import { ResponsiveChartContainer } from "./charts/ResponsiveChartContainer";
+import { ResponsiveTooltip } from "./ui/ResponsiveTooltip";
 
 interface PerformanceTrendsProps {
   roundStats: RoundStats[];
@@ -101,26 +101,68 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
     });
   };
 
+  // Format tooltip values
+  const formatValue = (value: number, dataKey: string) => {
+    if (dataKey === 'fairwayPercentage' || dataKey === 'girPercentage') {
+      return `${value.toFixed(1)}%`;
+    }
+    return value.toFixed(1);
+  };
+
   const renderChart = () => {
     switch (selectedChart) {
       case "score":
         return (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveChartContainer
+            aspectRatio={{ desktop: 2, tablet: 1.7, mobile: 0.9 }}
+            minHeight={300}
+            maxHeight={500}
+          >
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
                 dataKey="name"
-                tick={{ fontSize: 12 }}
-                interval="preserveStartEnd"
+                tick={{ fontSize: 10 }}
+                interval={chartData.length > 10 ? 'preserveStart' : 0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                tickLine={false}
               />
               <YAxis 
                 yAxisId="left"
                 orientation="left"
                 domain={['dataMin - 2', 'dataMax + 2']}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+                tickCount={5}
               />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Tooltip 
+                content={(props) => (
+                  <ResponsiveTooltip 
+                    {...props}
+                    labelFormatter={(label) => `Date: ${label}`}
+                    contentFormatter={(entry) => (
+                      <div className="flex items-center justify-between w-full text-xs sm:text-sm">
+                        <span className="font-medium" style={{ color: entry.color }}>
+                          {entry.name}:
+                        </span>
+                        <span className="ml-2">
+                          {formatValue(entry.value, entry.dataKey)}
+                        </span>
+                      </div>
+                    )}
+                  />
+                )}
+              />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: 10,
+                  fontSize: '0.75rem'
+                }}
+                iconSize={8}
+              />
               <Line
                 yAxisId="left"
                 type="monotone"
@@ -128,8 +170,8 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
                 stroke="#2563eb"
                 name="Total Score"
                 strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6, onMouseEnter: () => {} }}
+                dot={{ r: 3 }}
+                activeDot={{ r: 5 }}
               />
               <Line
                 yAxisId="left"
@@ -138,7 +180,7 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
                 stroke="#22c55e"
                 name="Score to Par"
                 strokeWidth={2}
-                dot={{ r: 4 }}
+                dot={{ r: 3 }}
               />
               {hoveredRound && (
                 <ReferenceLine
@@ -148,25 +190,59 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
                 />
               )}
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveChartContainer>
         );
 
       case "accuracy":
         return (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveChartContainer
+            aspectRatio={{ desktop: 2, tablet: 1.7, mobile: 0.9 }}
+            minHeight={300}
+            maxHeight={500}
+          >
             <AreaChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
                 dataKey="name"
-                tick={{ fontSize: 12 }}
-                interval="preserveStartEnd"
+                tick={{ fontSize: 10 }}
+                interval={chartData.length > 10 ? 'preserveStart' : 0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 domain={[0, 100]}
+                tickLine={false}
+                axisLine={false}
+                tickCount={5}
               />
-              <Tooltip content={<CustomTooltip valueFormatter={(value) => `${value.toFixed(1)}%`} />} />
-              <Legend />
+              <Tooltip 
+                content={(props) => (
+                  <ResponsiveTooltip 
+                    {...props}
+                    labelFormatter={(label) => `Date: ${label}`}
+                    contentFormatter={(entry) => (
+                      <div className="flex items-center justify-between w-full text-xs sm:text-sm">
+                        <span className="font-medium" style={{ color: entry.color }}>
+                          {entry.name}:
+                        </span>
+                        <span className="ml-2">
+                          {formatValue(entry.value, entry.dataKey)}
+                        </span>
+                      </div>
+                    )}
+                  />
+                )}
+              />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: 10,
+                  fontSize: '0.75rem'
+                }}
+                iconSize={8}
+              />
               <Area
                 type="monotone"
                 dataKey="fairwayPercentage"
@@ -193,7 +269,7 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
                 />
               )}
             </AreaChart>
-          </ResponsiveContainer>
+          </ResponsiveChartContainer>
         );
 
       case "putting":
@@ -202,28 +278,64 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
           3
         );
         return (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveChartContainer
+            aspectRatio={{ desktop: 2, tablet: 1.7, mobile: 0.9 }}
+            minHeight={300}
+            maxHeight={500}
+          >
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
                 dataKey="name"
-                tick={{ fontSize: 12 }}
-                interval="preserveStartEnd"
+                tick={{ fontSize: 10 }}
+                interval={chartData.length > 10 ? 'preserveStart' : 0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                tickLine={false}
               />
               <YAxis 
                 orientation="left"
                 domain={['dataMin - 1', 'dataMax + 1']}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+                tickCount={5}
               />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Tooltip 
+                content={(props) => (
+                  <ResponsiveTooltip 
+                    {...props}
+                    labelFormatter={(label) => `Date: ${label}`}
+                    contentFormatter={(entry) => (
+                      <div className="flex items-center justify-between w-full text-xs sm:text-sm">
+                        <span className="font-medium" style={{ color: entry.color }}>
+                          {entry.name}:
+                        </span>
+                        <span className="ml-2">
+                          {entry.dataKey === 'value' 
+                            ? Number(entry.value).toFixed(1) 
+                            : entry.value}
+                        </span>
+                      </div>
+                    )}
+                  />
+                )}
+              />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: 10,
+                  fontSize: '0.75rem'
+                }}
+                iconSize={8}
+              />
               <Line
                 type="monotone"
                 dataKey="puttsPerRound"
                 name="Putts"
                 stroke="#d946ef"
                 strokeWidth={2}
-                dot={{ r: 4 }}
+                dot={{ r: 3 }}
               />
               <Line
                 type="monotone"
@@ -245,46 +357,81 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
                 />
               )}
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveChartContainer>
         );
 
       case "driving":
         const trendLine = calculateTrendLine(chartData, "avgDriveDistance");
         return (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveChartContainer
+            aspectRatio={{ desktop: 2, tablet: 1.7, mobile: 0.9 }}
+            minHeight={300}
+            maxHeight={500}
+          >
             <AreaChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
                 dataKey="name"
-                tick={{ fontSize: 12 }}
-                interval="preserveStartEnd"
+                tick={{ fontSize: 10 }}
+                interval={chartData.length > 10 ? 'preserveStart' : 0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12 }}
-                domain={['dataMin - 10', 'dataMax + 10']}
+                orientation="left"
+                domain={['auto', 'auto']}
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+                tickCount={5}
               />
-              <Tooltip content={<CustomTooltip valueFormatter={(value) => `${value} yds`} />} />
-              <Legend />
+              <Tooltip 
+                content={(props) => (
+                  <ResponsiveTooltip 
+                    {...props}
+                    labelFormatter={(label) => `Date: ${label}`}
+                    contentFormatter={(entry) => (
+                      <div className="flex items-center justify-between w-full text-xs sm:text-sm">
+                        <span className="font-medium" style={{ color: entry.color }}>
+                          {entry.name}:
+                        </span>
+                        <span className="ml-2">
+                          {entry.value.toFixed(1)} {entry.name.includes('Distance') ? 'yds' : ''}
+                        </span>
+                      </div>
+                    )}
+                  />
+                )}
+              />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: 10,
+                  fontSize: '0.75rem'
+                }}
+                iconSize={8}
+              />
               <Area
                 type="monotone"
                 dataKey="avgDriveDistance"
-                name="Driving Distance"
-                stroke="#f97316"
-                fill="#f97316"
-                fillOpacity={0.3}
+                name="Drive Distance (yds)"
+                stroke="#0ea5e9"
+                fill="#0ea5e9"
+                fillOpacity={0.2}
                 strokeWidth={2}
               />
               {trendLine && (
                 <Line
                   type="monotone"
-                  data={chartData.map((d, i) => ({
+                  data={trendLine.map((d, i) => ({
                     name: d.name,
-                    value: trendLine[i].trend
+                    value: d.trend
                   }))}
                   dataKey="value"
                   name="Trend"
-                  stroke="#94a3b8"
-                  strokeDasharray="5 5"
+                  stroke="#f97316"
+                  strokeWidth={2}
                   dot={false}
                 />
               )}
@@ -296,61 +443,75 @@ export function PerformanceTrends({ roundStats }: PerformanceTrendsProps) {
                 />
               )}
             </AreaChart>
-          </ResponsiveContainer>
+          </ResponsiveChartContainer>
         );
+
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+    <Card className="shadow-md border-gray-100 dark:border-gray-800">
+      <CardHeader className="pb-4">
+        <CardTitle>Performance Trends</CardTitle>
+      </CardHeader>
+      <CardContent className="px-2 sm:px-4 pb-4">
         <Tabs value={selectedChart} onValueChange={(value) => setSelectedChart(value as ChartType)}>
-          <TabsList>
-            <TabsTrigger value="score">Scoring</TabsTrigger>
-            <TabsTrigger value="accuracy">Accuracy</TabsTrigger>
-            <TabsTrigger value="putting">Putting</TabsTrigger>
-            <TabsTrigger value="driving">Driving</TabsTrigger>
-          </TabsList>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+            <TabsList className="w-full sm:w-auto">
+              <TabsTrigger value="score">Score</TabsTrigger>
+              <TabsTrigger value="accuracy">Accuracy</TabsTrigger>
+              <TabsTrigger value="putting">Putting</TabsTrigger>
+              <TabsTrigger value="driving">Driving</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant={chartPeriod === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setChartPeriod("all")}
+                className="text-xs sm:text-sm"
+              >
+                All Rounds
+              </Button>
+              <Button 
+                variant={chartPeriod === "last10" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setChartPeriod("last10")}
+                className="text-xs sm:text-sm"
+              >
+                Last 10 
+              </Button>
+              <Button 
+                variant={chartPeriod === "last5" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setChartPeriod("last5")}
+                className="text-xs sm:text-sm"
+              >
+                Last 5
+              </Button>
+            </div>
+          </div>
+          
+          <div className="mt-2">
+            {renderChart()}
+          </div>
         </Tabs>
-        <div className="flex gap-2">
-          <Button
-            variant={chartPeriod === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setChartPeriod("all")}
-          >
-            All Rounds
-          </Button>
-          <Button
-            variant={chartPeriod === "last10" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setChartPeriod("last10")}
-          >
-            Last 10
-          </Button>
-          <Button
-            variant={chartPeriod === "last5" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setChartPeriod("last5")}
-          >
-            Last 5
-          </Button>
-        </div>
-      </div>
+        
+        <StatisticalInsights 
+          roundStats={filteredRounds} 
+          selectedMetric={selectedChart}
+        />
+      </CardContent>
 
-      <div className="h-[400px]">
-        {renderChart()}
-      </div>
-
-      <StatisticalInsights
-        roundStats={roundStats}
-        selectedMetric={selectedChart}
-      />
-
-      <DrilldownModal
-        round={selectedRound!}
-        isOpen={!!selectedRound}
-        onClose={() => setSelectedRound(null)}
-      />
-    </div>
+      {selectedRound && (
+        <DrilldownModal 
+          round={selectedRound} 
+          onClose={() => setSelectedRound(null)} 
+          isOpen={!!selectedRound}
+        />
+      )}
+    </Card>
   );
 } 
