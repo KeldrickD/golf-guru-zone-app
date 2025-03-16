@@ -17,7 +17,8 @@ import {
   Search,
   Flag,
   Wifi,
-  WifiOff
+  WifiOff,
+  Sparkles
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -99,6 +100,13 @@ const navigationItems: NavigationItem[] = [
     href: '/courses',
     icon: Map,
     description: 'Discover new golf courses to play',
+    requiresAuth: false,
+  },
+  {
+    name: 'Features',
+    href: '/features',
+    icon: Sparkles,
+    description: 'Explore advanced golf features and tools',
     requiresAuth: false,
   },
 ];
