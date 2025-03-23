@@ -5,7 +5,10 @@ import { Input } from '@/components/ui/Input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { ScrollArea } from '@/components/ui/ScrollArea';
 import { Badge } from '@/components/ui/Badge';
-import { Calendar, Users, Trophy, MapPin, Clock, Search, Filter } from 'lucide-react';
+import { Calendar } from '@/components/ui/Calendar';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
+import { Calendar as CalendarIcon, Users, Trophy, MapPin, Clock, Search, Filter, MessageCircle, Bell } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface Event {
   id: string;
@@ -18,6 +21,7 @@ interface Event {
   maxParticipants: number;
   skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'all';
   cost: number;
+  rsvpStatus?: 'going' | 'maybe' | 'not-going';
 }
 
 interface Group {
@@ -29,6 +33,7 @@ interface Group {
   skillLevel: string;
   meetingFrequency: string;
   image: string;
+  joined?: boolean;
 }
 
 const mockEvents: Event[] = [
@@ -107,25 +112,61 @@ export default function Community() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const [groups, setGroups] = useState<Group[]>(mockGroups);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showRSVPDialog, setShowRSVPDialog] = useState(false);
 
-  const filteredEvents = mockEvents.filter(event => {
+  const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || event.type === selectedType;
     const matchesSkill = selectedSkillLevel === 'all' || event.skillLevel === selectedSkillLevel;
-    return matchesSearch && matchesType && matchesSkill;
+    const matchesDate = !selectedDate || format(new Date(event.date), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+    return matchesSearch && matchesType && matchesSkill && matchesDate;
   });
 
-  const filteredGroups = mockGroups.filter(group =>
+  const filteredGroups = groups.filter(group =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     group.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleRSVP = (eventId: string, status: 'going' | 'maybe' | 'not-going') => {
+    setEvents(events.map(event => 
+      event.id === eventId 
+        ? { 
+            ...event, 
+            rsvpStatus: status,
+            participants: status === 'going' 
+              ? (event.rsvpStatus === 'going' ? event.participants : event.participants + 1)
+              : (event.rsvpStatus === 'going' ? event.participants - 1 : event.participants)
+          }
+        : event
+    ));
+    setShowRSVPDialog(false);
+  };
+
+  const handleJoinGroup = (groupId: string) => {
+    setGroups(groups.map(group =>
+      group.id === groupId
+        ? { ...group, joined: !group.joined, members: group.joined ? group.members - 1 : group.members + 1 }
+        : group
+    ));
+  };
+
+  const getEventsByDate = (date: Date) => {
+    return events.filter(event => 
+      format(new Date(event.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+    );
+  };
 
   return (
     <div className="space-y-6">
       <Tabs defaultValue="events" className="space-y-4">
         <TabsList>
           <TabsTrigger value="events">Events & Tournaments</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="groups">Golf Groups</TabsTrigger>
         </TabsList>
 
@@ -180,7 +221,7 @@ export default function Community() {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <CalendarIcon className="h-4 w-4 text-gray-500" />
                         <span>{new Date(event.date).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -201,11 +242,109 @@ export default function Community() {
                     <span className="text-lg font-semibold">
                       {event.cost === 0 ? 'Free' : `$${event.cost}`}
                     </span>
-                    <Button>Register</Button>
+                    <Dialog open={showRSVPDialog && selectedEvent?.id === event.id} onOpenChange={(open) => {
+                      setShowRSVPDialog(open);
+                      if (open) setSelectedEvent(event);
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button variant={event.rsvpStatus === 'going' ? 'default' : 'outline'}>
+                          {event.rsvpStatus === 'going' ? 'Going' : 'RSVP'}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>RSVP to {event.title}</DialogTitle>
+                          <DialogDescription>
+                            Let others know if you plan to attend this event.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid grid-cols-3 gap-4">
+                          <Button
+                            variant={event.rsvpStatus === 'going' ? 'default' : 'outline'}
+                            onClick={() => handleRSVP(event.id, 'going')}
+                          >
+                            Going
+                          </Button>
+                          <Button
+                            variant={event.rsvpStatus === 'maybe' ? 'default' : 'outline'}
+                            onClick={() => handleRSVP(event.id, 'maybe')}
+                          >
+                            Maybe
+                          </Button>
+                          <Button
+                            variant={event.rsvpStatus === 'not-going' ? 'default' : 'outline'}
+                            onClick={() => handleRSVP(event.id, 'not-going')}
+                          >
+                            Can't Go
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardFooter>
                 </Card>
               ))}
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Calendar</CardTitle>
+                <CardDescription>View and manage upcoming events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  className="rounded-md border"
+                  modifiers={{
+                    hasEvent: (date) => getEventsByDate(date).length > 0,
+                  }}
+                  modifiersStyles={{
+                    hasEvent: { backgroundColor: 'rgba(34, 197, 94, 0.1)', fontWeight: 'bold' }
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a Date'}
+                </CardTitle>
+                <CardDescription>
+                  {selectedDate ? `Events on ${format(selectedDate, 'MMMM d')}` : 'Click a date to view events'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px]">
+                  {selectedDate ? (
+                    getEventsByDate(selectedDate).length > 0 ? (
+                      <div className="space-y-4">
+                        {getEventsByDate(selectedDate).map((event) => (
+                          <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">
+                            <div>
+                              <h4 className="font-medium">{event.title}</h4>
+                              <p className="text-sm text-gray-500">{event.location}</p>
+                            </div>
+                            <Badge variant={event.type === 'tournament' ? 'default' : 'secondary'}>
+                              {event.type}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-gray-500">No events scheduled for this date</p>
+                    )
+                  ) : (
+                    <p className="text-center text-gray-500">Select a date to view events</p>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
@@ -259,8 +398,20 @@ export default function Community() {
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <Button className="w-full">Join Group</Button>
+                  <CardFooter className="flex gap-2">
+                    <Button 
+                      variant={group.joined ? 'default' : 'outline'}
+                      className="flex-1"
+                      onClick={() => handleJoinGroup(group.id)}
+                    >
+                      {group.joined ? 'Leave Group' : 'Join Group'}
+                    </Button>
+                    <Button variant="outline" size="icon">
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon">
+                      <Bell className="h-4 w-4" />
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
