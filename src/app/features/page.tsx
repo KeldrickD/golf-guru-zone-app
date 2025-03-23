@@ -8,7 +8,9 @@ import { WeatherConditions } from '@/components/features/WeatherConditions';
 import { SocialSharing } from '@/components/features/SocialSharing';
 import { StatTracking } from '@/components/features/StatTracking';
 import { FitnessTraining } from '@/components/features/FitnessTraining';
-import { EquipmentReview } from '@/components/features/EquipmentReview';
+import EquipmentReview from '@/components/features/EquipmentReview';
+import CourseRating from '@/components/features/CourseRating';
+import GolfRules from '@/components/features/GolfRules';
 import {
   Tabs,
   TabsContent,
@@ -24,6 +26,8 @@ import {
   BarChart3,
   Dumbbell,
   ShoppingBag,
+  Flag,
+  Book,
 } from 'lucide-react';
 
 export default function FeaturesPage() {
@@ -37,7 +41,7 @@ export default function FeaturesPage() {
       </div>
 
       <Tabs defaultValue="swing" className="space-y-4">
-        <TabsList className="grid grid-cols-8 gap-4 h-auto sm:h-12">
+        <TabsList className="grid grid-cols-10 gap-4 h-auto sm:h-12">
           <TabsTrigger value="swing" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
             <span className="hidden sm:inline">Swing Analysis</span>
@@ -69,6 +73,14 @@ export default function FeaturesPage() {
           <TabsTrigger value="equipment" className="flex items-center gap-2">
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Equipment</span>
+          </TabsTrigger>
+          <TabsTrigger value="courses" className="flex items-center gap-2">
+            <Flag className="h-4 w-4" />
+            <span className="hidden sm:inline">Courses</span>
+          </TabsTrigger>
+          <TabsTrigger value="rules" className="flex items-center gap-2">
+            <Book className="h-4 w-4" />
+            <span className="hidden sm:inline">Rules</span>
           </TabsTrigger>
         </TabsList>
 
@@ -102,6 +114,14 @@ export default function FeaturesPage() {
         
         <TabsContent value="equipment" className="space-y-4">
           <EquipmentReview />
+        </TabsContent>
+        
+        <TabsContent value="courses" className="space-y-4">
+          <CourseRating />
+        </TabsContent>
+
+        <TabsContent value="rules" className="space-y-4">
+          <GolfRules />
         </TabsContent>
       </Tabs>
     </div>

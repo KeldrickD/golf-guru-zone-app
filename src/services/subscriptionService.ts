@@ -1,3 +1,4 @@
+import { Plan, PlanFeatures, SubscriptionTier } from '@/types/subscription';
 import WalletService from './walletService';
 import AnalyticsService from './analyticsService';
 
@@ -42,54 +43,57 @@ class SubscriptionService {
   private currentTier: SubscriptionTier | null = null;
   
   // Define subscription plans
-  public readonly plans: SubscriptionPlan[] = [
+  public readonly plans: Plan[] = [
     {
-      id: 'free',
-      name: 'Free',
-      tier: SubscriptionTier.FREE,
+      id: 'basic',
+      name: 'Basic',
       price: 0,
       features: {
-        maxBets: 5,
-        analytics: false,
-        courseAnalytics: false,
-        playerAnalytics: false,
-        customBets: false,
-        aiRecommendations: false,
-        priority: false
+        swingAnalysis: true,
+        aiCoaching: false,
+        customWorkouts: false,
+        equipmentAnalysis: false,
+        advancedStats: false,
+        lessonBooking: false,
+        maxRounds: 5,
+        courseAccess: false
       },
-      description: 'Basic betting functionality with limited features.'
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      tier: SubscriptionTier.PREMIUM,
-      price: 9.99,
-      features: {
-        maxBets: 20,
-        analytics: true,
-        courseAnalytics: true,
-        playerAnalytics: false,
-        customBets: true,
-        aiRecommendations: false,
-        priority: false
-      },
-      description: 'Enhanced betting experience with analytics and custom bets.'
+      tier: SubscriptionTier.BASIC,
+      description: 'Basic golf improvement features to get you started.'
     },
     {
       id: 'pro',
       name: 'Pro',
-      tier: SubscriptionTier.PRO,
       price: 19.99,
       features: {
-        maxBets: 100,
-        analytics: true,
-        courseAnalytics: true,
-        playerAnalytics: true,
-        customBets: true,
-        aiRecommendations: true,
-        priority: true
+        swingAnalysis: true,
+        aiCoaching: true,
+        customWorkouts: true,
+        equipmentAnalysis: true,
+        advancedStats: true,
+        lessonBooking: false,
+        maxRounds: 20,
+        courseAccess: true
       },
-      description: 'Complete access to all features including AI recommendations and player analytics.'
+      tier: SubscriptionTier.PRO,
+      description: 'Enhanced features for serious golfers looking to improve their game.'
+    },
+    {
+      id: 'elite',
+      name: 'Elite',
+      price: 39.99,
+      features: {
+        swingAnalysis: true,
+        aiCoaching: true,
+        customWorkouts: true,
+        equipmentAnalysis: true,
+        advancedStats: true,
+        lessonBooking: true,
+        maxRounds: 100,
+        courseAccess: true
+      },
+      tier: SubscriptionTier.ELITE,
+      description: 'Complete access to all features for the dedicated golfer.'
     }
   ];
   
@@ -305,7 +309,7 @@ class SubscriptionService {
    * Get plan details by subscription tier
    * @param tier The subscription tier
    */
-  getPlanByTier(tier: SubscriptionTier): SubscriptionPlan | undefined {
+  getPlanByTier(tier: SubscriptionTier): Plan | undefined {
     return this.plans.find(plan => plan.tier === tier);
   }
   
@@ -328,7 +332,7 @@ class SubscriptionService {
       return 5; // Default to FREE tier limit
     }
     
-    return plan.features.maxBets;
+    return plan.features.maxRounds;
   }
 
   async getTransactionFeePercentage(): Promise<number> {
@@ -350,6 +354,86 @@ class SubscriptionService {
       return this.plans[0].features;
     }
     return plan.features;
+  }
+
+  /**
+   * Get all available subscription plans
+   */
+  async getPlans(): Promise<Plan[]> {
+    try {
+      // In a real implementation, this would fetch from an API
+      return this.plans;
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get a specific plan by ID
+   */
+  async getPlan(planId: string): Promise<Plan | null> {
+    try {
+      const plan = this.plans.find(p => p.id === planId);
+      return plan || null;
+    } catch (error) {
+      console.error('Error fetching subscription plan:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get the current user's subscription plan
+   */
+  async getCurrentPlan(): Promise<Plan | null> {
+    try {
+      // In a real implementation, this would fetch the user's current plan from an API
+      return this.plans[0]; // Default to basic plan for demo
+    } catch (error) {
+      console.error('Error fetching current subscription:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Subscribe to a plan
+   */
+  async subscribe(planId: string): Promise<boolean> {
+    try {
+      // In a real implementation, this would handle the subscription process
+      console.log(`Subscribing to plan ${planId}`);
+      return true;
+    } catch (error) {
+      console.error('Error subscribing to plan:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if the user has access to a specific feature
+   */
+  async hasFeatureAccess(feature: keyof PlanFeatures): Promise<boolean> {
+    try {
+      const currentPlan = await this.getCurrentPlan();
+      return currentPlan?.features[feature] || false;
+    } catch (error) {
+      console.error('Error checking feature access:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get the maximum number of rounds allowed for current user
+   */
+  async getMaxRounds(): Promise<number> {
+    try {
+      const plan = await this.getCurrentPlan();
+      if (!plan) return 0;
+      return plan.features.maxRounds;
+    } catch (error) {
+      console.error('Error getting max rounds:', error);
+      return 0;
+    }
   }
 }
 

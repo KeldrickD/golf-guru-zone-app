@@ -123,7 +123,7 @@ export default function HomePage() {
           Golf Guru Zone
         </h1>
         <p className="text-xl md:text-2xl mb-8 max-w-2xl text-gray-700">
-          Create and manage golf bets with friends, track your performance, and improve your game.
+          Elevate your golf game with personalized training, performance tracking, and expert guidance.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4">
@@ -154,8 +154,8 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">🏌️</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Golf Bets</h3>
-              <p className="text-gray-600">Create and manage golf bets with friends using various formats like Match Play, Nassau, and Skins.</p>
+              <h3 className="text-xl font-semibold mb-2">Swing Analysis</h3>
+              <p className="text-gray-600">Get detailed analysis of your swing mechanics and personalized tips for improvement.</p>
             </div>
             
             <div className="p-6 border border-gray-200 rounded-lg">
@@ -176,22 +176,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      
-      {/* Footer */}
-      <footer className="py-8 px-4 bg-gray-100">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <p className="text-gray-600">&copy; {new Date().getFullYear()} Golf Guru Zone. All rights reserved.</p>
-          </div>
-          
-          <div className="flex gap-6">
-            <Link href="/about" className="text-gray-600 hover:text-gray-900">About</Link>
-            <Link href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</Link>
-            <Link href="/terms" className="text-gray-600 hover:text-gray-900">Terms</Link>
-            <Link href="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 } 
