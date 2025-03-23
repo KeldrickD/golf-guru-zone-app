@@ -5,6 +5,8 @@ import { SwingAnalysis } from '@/components/features/SwingAnalysis';
 import { TournamentTracker } from '@/components/features/TournamentTracker';
 import { LessonBooking } from '@/components/features/LessonBooking';
 import { WeatherConditions } from '@/components/features/WeatherConditions';
+import { SocialSharing } from '@/components/features/SocialSharing';
+import { StatTracking } from '@/components/features/StatTracking';
 import {
   Tabs,
   TabsContent,
@@ -16,6 +18,8 @@ import {
   Trophy,
   BookOpen,
   Cloud,
+  Share2,
+  BarChart3,
 } from 'lucide-react';
 
 export default function FeaturesPage() {
@@ -29,7 +33,7 @@ export default function FeaturesPage() {
       </div>
 
       <Tabs defaultValue="swing" className="space-y-4">
-        <TabsList className="grid grid-cols-4 gap-4 h-auto sm:h-12">
+        <TabsList className="grid grid-cols-6 gap-4 h-auto sm:h-12">
           <TabsTrigger value="swing" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
             <span className="hidden sm:inline">Swing Analysis</span>
@@ -45,6 +49,14 @@ export default function FeaturesPage() {
           <TabsTrigger value="weather" className="flex items-center gap-2">
             <Cloud className="h-4 w-4" />
             <span className="hidden sm:inline">Weather</span>
+          </TabsTrigger>
+          <TabsTrigger value="social" className="flex items-center gap-2">
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Social Sharing</span>
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Stat Tracking</span>
           </TabsTrigger>
         </TabsList>
 
@@ -62,6 +74,14 @@ export default function FeaturesPage() {
 
         <TabsContent value="weather" className="space-y-4">
           <WeatherConditions />
+        </TabsContent>
+        
+        <TabsContent value="social" className="space-y-4">
+          <SocialSharing />
+        </TabsContent>
+        
+        <TabsContent value="stats" className="space-y-4">
+          <StatTracking />
         </TabsContent>
       </Tabs>
     </div>
