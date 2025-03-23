@@ -8,6 +8,7 @@ import { WeatherConditions } from '@/components/features/WeatherConditions';
 import { SocialSharing } from '@/components/features/SocialSharing';
 import { StatTracking } from '@/components/features/StatTracking';
 import { FitnessTraining } from '@/components/features/FitnessTraining';
+import { EquipmentReview } from '@/components/features/EquipmentReview';
 import {
   Tabs,
   TabsContent,
@@ -22,6 +23,7 @@ import {
   Share2,
   BarChart3,
   Dumbbell,
+  ShoppingBag,
 } from 'lucide-react';
 
 export default function FeaturesPage() {
@@ -35,7 +37,7 @@ export default function FeaturesPage() {
       </div>
 
       <Tabs defaultValue="swing" className="space-y-4">
-        <TabsList className="grid grid-cols-7 gap-4 h-auto sm:h-12">
+        <TabsList className="grid grid-cols-8 gap-4 h-auto sm:h-12">
           <TabsTrigger value="swing" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
             <span className="hidden sm:inline">Swing Analysis</span>
@@ -63,6 +65,10 @@ export default function FeaturesPage() {
           <TabsTrigger value="fitness" className="flex items-center gap-2">
             <Dumbbell className="h-4 w-4" />
             <span className="hidden sm:inline">Fitness & Training</span>
+          </TabsTrigger>
+          <TabsTrigger value="equipment" className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4" />
+            <span className="hidden sm:inline">Equipment</span>
           </TabsTrigger>
         </TabsList>
 
@@ -92,6 +98,10 @@ export default function FeaturesPage() {
         
         <TabsContent value="fitness" className="space-y-4">
           <FitnessTraining />
+        </TabsContent>
+        
+        <TabsContent value="equipment" className="space-y-4">
+          <EquipmentReview />
         </TabsContent>
       </Tabs>
     </div>
