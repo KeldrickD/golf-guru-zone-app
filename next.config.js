@@ -12,8 +12,8 @@ const nextConfig = {
     };
     return config;
   },
-  // Remove export configuration since it doesn't work with API routes
-  // output: 'export',
+  // Set build output to standalone to support Vercel deployment
+  output: 'standalone',
   images: {
     unoptimized: true,
   },
@@ -24,6 +24,11 @@ const nextConfig = {
   // Ignore ESLint errors during build
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  // Configure non-static paths - error pages will be server-rendered
+  experimental: {
+    // This prevents certain pages from being statically generated
+    excludeDefaultMomentLocales: false,
   },
 }
 

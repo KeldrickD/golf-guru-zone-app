@@ -13,6 +13,9 @@ import { Providers } from '@/components/Providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Make all routes dynamic - required to handle error pages correctly
+export const dynamic = 'force-dynamic';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
