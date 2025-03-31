@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
@@ -21,6 +21,7 @@ import {
   Play
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useLanguage } from '@/context/LanguageContext';
 
 const features = [
   {
@@ -103,27 +104,23 @@ const fadeInVariants = {
   visible: { opacity: 1, transition: { duration: 0.8 } }
 };
 
-export default function HomePage() {
+export default function LocalizedHomePage({ params }: { params: { locale: string } }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { setLanguage } = useLanguage();
   
-  // Handle direct navigation to locale root path like /en
-  useEffect(() => {
-    const supportedLocales = ['en', 'es', 'fr', 'de', 'ja', 'ko'];
-    const pathSegments = pathname?.split('/').filter(Boolean) || [];
-    
-    // If we're at a locale root path like /en, redirect to home
-    if (pathSegments.length === 1 && supportedLocales.includes(pathSegments[0])) {
-      router.replace(`/${pathSegments[0]}/`);
+  // Set the language based on the locale parameter
+  React.useEffect(() => {
+    if (params.locale) {
+      setLanguage(params.locale as any);
     }
-  }, [pathname, router]);
+  }, [params.locale, setLanguage]);
   
   const handleGetStarted = () => {
     if (status === 'authenticated') {
-      router.push('/dashboard');
+      router.push(`/${params.locale}/dashboard`);
     } else {
-      router.push('/modern-ui');
+      router.push(`/${params.locale}/modern-ui`);
     }
   };
 
@@ -149,7 +146,7 @@ export default function HomePage() {
           <Button 
             variant="outline"
             className="px-8 py-3 text-lg"
-            onClick={() => router.push('/features')}
+            onClick={() => router.push(`/${params.locale}/features`)}
           >
             Learn More
           </Button>

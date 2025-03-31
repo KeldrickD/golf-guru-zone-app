@@ -62,6 +62,12 @@ export async function middleware(request: NextRequest) {
   // For pages with locale, update HTML lang attribute
   if (pathnameHasLocale) {
     response.headers.set('x-locale', locale);
+    
+    // Special case for /en, /fr, etc. - redirect to home page
+    if (SUPPORTED_LOCALES.includes(pathname.slice(1)) && pathname.split('/').length === 2) {
+      return NextResponse.redirect(new URL(`${pathname}/`, request.url));
+    }
+    
     return response;
   }
 
