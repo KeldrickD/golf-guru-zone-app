@@ -1,11 +1,66 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const equipment = await prisma.equipment.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        type: 'asc',
+      },
+    });
+
+    return NextResponse.json(equipment);
+  } catch (error) {
+    console.error('Error fetching equipment:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { type, brand, model, specs, purchaseDate, notes } = body;
+
+    const equipment = await prisma.equipment.create({
+      data: {
+        type,
+        brand,
+        model,
+        specs,
+        purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
+        notes,
+        userId: session.user.id,
+      },
+    });
+
+    return NextResponse.json(equipment);
+  } catch (error) {
+    console.error('Error creating equipment:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
+
+export async function POST_OLD(request: Request) {
   try {
     const { handicap, swingSpeed, budget, primaryConcern, clubType } = await request.json();
 

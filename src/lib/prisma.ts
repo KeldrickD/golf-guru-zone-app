@@ -1,3 +1,15 @@
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
+
 // Mock Prisma Client
 class MockPrismaClient {
   user = {
@@ -76,5 +88,5 @@ class MockPrismaClient {
 }
 
 // Create and export a mock Prisma client instance
-const prisma = new MockPrismaClient();
-export default prisma; 
+const mockPrisma = new MockPrismaClient();
+export default mockPrisma; 

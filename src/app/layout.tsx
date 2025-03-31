@@ -4,11 +4,11 @@ import '@/styles/globals.css';
 import '@/styles/rtl.css';
 import '@/styles/mobile-charts.css';
 import '@/styles/mobile.css';
-import Navigation from '@/components/Navigation';
+import { Navigation } from '@/components/layout/Navigation';
 import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/Toaster';
-import SessionProvider from "@/components/SessionProvider";
+import { SessionProvider } from 'next-auth/react';
 import Script from 'next/script';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Golf Guru Zone',
-  description: 'Your personal AI-powered golf coach and analytics platform',
+  description: 'Track and analyze your golf performance',
   applicationName: 'Golf Guru Zone',
   appleWebApp: {
     capable: true,
@@ -65,20 +65,22 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/splash/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
       </head>
       <body className={cn('min-h-screen font-sans antialiased', inter.className)}>
-        <LanguageProvider>
-          <ThemeProvider>
-            <SessionProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <Navigation />
-                <main className="flex-1">
+        <SessionProvider>
+          <LanguageProvider>
+            <ThemeProvider>
+              <div className="flex h-screen">
+                <div className="w-64 border-r">
+                  <Navigation />
+                </div>
+                <main className="flex-1 overflow-auto">
                   {children}
                 </main>
-                <Footer />
-                <Toaster />
               </div>
-            </SessionProvider>
-          </ThemeProvider>
-        </LanguageProvider>
+              <Footer />
+              <Toaster />
+            </ThemeProvider>
+          </LanguageProvider>
+        </SessionProvider>
         
         {/* Service worker registration script */}
         <Script

@@ -49,13 +49,14 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  equipment     Equipment[]
   rounds        Round[]
-  handicap      Float?
-  homeClub      String?
+  goals         Goal[]
+  comments      Comment[]
+  sharedContent SharedContent[]
+  settings      Json?     @default("{}")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  goals         UserGoal[]
-  sharedContent SharedContent[]
 }
 
 model VerificationToken {
@@ -68,47 +69,80 @@ model VerificationToken {
 
 // Golf-specific Models
 model Course {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  location    String
-  holeCount   Int     @default(18)
-  par         Int     @default(72)
-  rating      Float?
-  slope       Float?
-  description String? @db.Text
-  imageUrl    String?
+  location    String?
+  par         Int
+  yardage     Int
+  difficulty  Float?   // Rating from 1-5
   rounds      Round[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Equipment {
+  id               String            @id @default(cuid())
+  userId           String
+  type             String
+  brand            String
+  model            String
+  purchaseDate     DateTime
+  lastUsed         DateTime?
+  totalRounds      Int              @default(0)
+  averageDistance  Float            @default(0)
+  accuracy         Float            @default(0)
+  consistency      Float            @default(0)
+  maintenanceHistory MaintenanceRecord[]
+  shots            Shot[]
+  user             User             @relation(fields: [userId], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+model MaintenanceRecord {
+  id          String    @id @default(cuid())
+  equipmentId String
+  date        DateTime
+  type        String
+  notes       String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([equipmentId])
 }
 
 model Round {
-  id                 String   @id @default(cuid())
-  date               DateTime
-  totalScore         Int
-  putts              Int?
-  fairwaysHit        Int?
-  totalFairways      Int?
-  greensInRegulation Int?
-  totalGreens        Int?
-  notes              String?  @db.Text
-  userId             String
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId           String?
-  course             Course?  @relation(fields: [courseId], references: [id])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  shots              Shot[]
-  sharedContent      SharedContent[]
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  courseId  String
+  shots     Shot[]
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+  sharedContent SharedContent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([courseId])
 }
 
 model Shot {
-  id      String  @id @default(cuid())
-  roundId String
-  round   Round   @relation(fields: [roundId], references: [id], onDelete: Cascade)
-  holeNum Int
-  club    String?
-  distance Int?
-  result  String? // "fairway", "green", "bunker", "rough", etc.
-  notes   String? @db.Text
+  id          String    @id @default(cuid())
+  equipmentId String
+  roundId     String
+  distance    Float
+  accuracy    Float
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  round       Round     @relation(fields: [roundId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([equipmentId])
+  @@index([roundId])
 }
 
 model ClubDistance {
@@ -125,51 +159,55 @@ model ClubDistance {
   @@unique([userId, club])
 }
 
-model UserGoal {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type         String   // "handicap", "score", "fairways", "gir", "putts", etc.
-  targetValue  Float
-  startValue   Float?
-  deadline     DateTime?
-  isCompleted  Boolean  @default(false)
-  progress     Float?   // Percentage towards goal
-  notes        String?  @db.Text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  sharedContent SharedContent[]
-}
-
 // Shared Content Model for PDF links and social sharing
 model SharedContent {
   id          String   @id @default(cuid())
-  shareId     String   @unique // Short, unique identifier for URLs
-  contentType String   // "round", "goal", "stats", etc.
+  userId      String
+  roundId     String?
+  goalId      String?
+  type        String   // "round", "goal", "achievement"
   title       String
   description String?  @db.Text
-  
-  // References to content (one of these will be set)
-  roundId     String?
-  round       Round?   @relation(fields: [roundId], references: [id], onDelete: Cascade)
-  goalId      String?
-  goal        UserGoal? @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  
-  // For stats sharing
-  statsTimeframe String? // "last7days", "last30days", "year", etc.
-  
-  // For custom data
-  customData  Json?    // For any additional data needed for the shared content
-  
-  // Sharing settings
-  expiresAt   DateTime?
-  isPublic    Boolean  @default(true)
-  viewCount   Int      @default(0)
-  
-  // User who created the share
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  imageUrl    String?
+  likes       Int      @default(0)
+  comments    Comment[]
+  user        User     @relation(fields: [userId], references: [id])
+  round       Round?   @relation(fields: [roundId], references: [id])
+  goal        Goal?    @relation(fields: [goalId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([roundId])
+  @@index([goalId])
+}
+
+model Comment {
+  id              String        @id @default(cuid())
+  userId          String
+  sharedContentId String
+  content         String       @db.Text
+  user            User         @relation(fields: [userId], references: [id])
+  sharedContent   SharedContent @relation(fields: [sharedContentId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([sharedContentId])
+}
+
+model Goal {
+  id            String        @id @default(cuid())
+  userId        String
+  title         String
+  description   String?      @db.Text
+  targetDate    DateTime?
+  status        String       @default("in_progress") // in_progress, completed, abandoned
+  progress      Float        @default(0)
+  sharedContent SharedContent[]
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([userId])
 }

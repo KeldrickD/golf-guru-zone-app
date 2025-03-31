@@ -1,61 +1,34 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import prisma from '@/lib/prisma';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 // GET /api/rounds - Retrieve user rounds
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
     
-    // Parse query parameters
-    const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '10');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
-    const courseId = url.searchParams.get('courseId');
-    
-    // Build query
-    const query: any = {
+    const rounds = await prisma.round.findMany({
       where: {
         userId: session.user.id,
-        ...(courseId ? { courseId } : {}),
       },
       orderBy: {
         date: 'desc',
       },
-      take: limit,
-      skip: offset,
-      include: {
-        course: {
-          select: {
-            name: true,
-            location: true,
-          },
-        },
-      },
-    };
-    
-    // Get rounds
-    const rounds = await prisma.round.findMany(query);
-    const total = await prisma.round.count({ where: query.where });
-    
-    return NextResponse.json({ 
-      rounds, 
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      } 
     });
+    
+    return NextResponse.json(rounds);
   } catch (error) {
-    console.error('Error in /api/rounds GET:', error);
+    console.error('Error fetching rounds:', error);
     return NextResponse.json(
-      { error: 'Failed to retrieve rounds' },
+      { error: 'Failed to fetch rounds' },
       { status: 500 }
     );
   }
@@ -66,42 +39,44 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const data = await request.json();
-    
-    // Basic validation
-    if (!data.date || !data.totalScore) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
     
-    // Create round
+    const body = await request.json();
+    const {
+      course,
+      date,
+      totalScore,
+      putts,
+      fairwaysHit,
+      totalFairways,
+      greensInRegulation,
+      totalGreens,
+      notes,
+    } = body;
+    
     const round = await prisma.round.create({
       data: {
-        date: new Date(data.date),
-        totalScore: data.totalScore,
-        putts: data.putts,
-        fairwaysHit: data.fairwaysHit,
-        totalFairways: data.totalFairways,
-        greensInRegulation: data.greensInRegulation,
-        totalGreens: data.totalGreens,
-        courseId: data.courseId,
-        user: {
-          connect: {
-            id: session.user.id,
-          },
-        },
+        course,
+        date: new Date(date),
+        totalScore: parseInt(totalScore),
+        putts: putts ? parseInt(putts) : null,
+        fairwaysHit: fairwaysHit ? parseInt(fairwaysHit) : null,
+        totalFairways: totalFairways ? parseInt(totalFairways) : null,
+        greensInRegulation: greensInRegulation ? parseInt(greensInRegulation) : null,
+        totalGreens: totalGreens ? parseInt(totalGreens) : null,
+        notes,
+        userId: session.user.id,
       },
     });
     
-    return NextResponse.json({ round });
+    return NextResponse.json(round);
   } catch (error) {
-    console.error('Error in /api/rounds POST:', error);
+    console.error('Error creating round:', error);
     return NextResponse.json(
       { error: 'Failed to create round' },
       { status: 500 }

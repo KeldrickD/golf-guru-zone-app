@@ -1,41 +1,51 @@
-import { NextResponse } from 'next/server';
+import NextAuth, { AuthOptions, Session } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from '@/lib/prisma';
+import GoogleProvider from 'next-auth/providers/google';
+import GithubProvider from 'next-auth/providers/github';
 
-// Mock user data for authentication
-const mockUser = {
-  id: '1',
-  name: 'Demo User',
-  email: 'demo@example.com',
-  image: 'https://via.placeholder.com/150',
-  subscription: {
-    status: 'active',
-    plan: 'premium',
-    nextBillingDate: '2023-12-01',
-  }
+export const authOptions: AuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    GithubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!,
+    }),
+  ],
+  session: {
+    strategy: 'jwt' as const,
+  },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
+  callbacks: {
+    async session({ session, token }: { session: Session; token: JWT }) {
+      if (session.user) {
+        session.user.id = token.sub!;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
+      }
+      return session;
+    },
+    async jwt({ token, user }: { token: JWT; user: any }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+      }
+      return token;
+    },
+  },
 };
 
-// Simple session response
-export async function GET() {
-  return NextResponse.json({
-    user: mockUser,
-    expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 1 week
-  });
-}
+const handler = NextAuth(authOptions);
 
-// Simple sign-in response
-export async function POST(request: Request) {
-  const body = await request.json();
-  
-  // Very simple mock authentication
-  if (body.email === 'demo@example.com' && body.password === 'password') {
-    return NextResponse.json({
-      user: mockUser,
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 1 week
-    });
-  }
-  
-  // Default to a successful mock response for demo purposes
-  return NextResponse.json({
-    user: mockUser,
-    expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 1 week
-  });
-} 
+export { handler as GET, handler as POST }; 

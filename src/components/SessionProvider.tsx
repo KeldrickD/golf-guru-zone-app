@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, Session as AuthSession } from '@/auth';
+import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react';
+import { ReactNode } from 'react';
 
 // Define the session type
 interface User {
@@ -82,5 +84,23 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     </SessionContext.Provider>
   );
 };
+
+interface SessionProviderProps {
+  children: ReactNode;
+  session: any;
+}
+
+export function SessionProvider({ children, session }: SessionProviderProps) {
+  return (
+    <NextAuthSessionProvider session={session}>
+      {children}
+    </NextAuthSessionProvider>
+  );
+}
+
+export function useSession() {
+  const { data: session, status } = useSession();
+  return { session, status };
+}
 
 export default SessionProvider; 
