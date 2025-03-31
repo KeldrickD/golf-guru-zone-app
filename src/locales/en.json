@@ -21,7 +21,9 @@
     "noResults": "No results found",
     "pro": "PRO",
     "searchPlaceholder": "Search for courses, equipment, or rules...",
-    "machineTranslated": "This content has been automatically translated and may not be entirely accurate."
+    "machineTranslated": "This content has been automatically translated and may not be entirely accurate.",
+    "or": "or",
+    "allRightsReserved": "All rights reserved."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -171,8 +173,14 @@
     "alreadyHaveAccount": "Already have an account?",
     "noAccount": "Don't have an account?",
     "signInWith": "Sign in with",
+    "signUpWith": "Sign up with",
     "resetPassword": "Reset Password",
-    "passwordResetSent": "Password reset link sent to your email"
+    "passwordResetSent": "Password reset link sent to your email",
+    "welcomeBack": "Welcome back to Golf Guru Zone",
+    "createAccount": "Create your Golf Guru Zone account",
+    "name": "Full Name",
+    "demoMode": "Demo Mode",
+    "error": "Error"
   },
   "subscription": {
     "plans": "Subscription Plans",
