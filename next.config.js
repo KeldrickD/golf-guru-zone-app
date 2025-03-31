@@ -16,8 +16,7 @@ const nextConfig = {
   output: 'standalone',
   // Don't clean the .next directory between builds to preserve service worker
   experimental: {
-    // This prevents certain pages from being statically generated
-    excludeDefaultMomentLocales: false,
+    // Empty experimental section or remove if not needed
   },
   images: {
     unoptimized: true,
@@ -34,7 +33,7 @@ const nextConfig = {
   i18n: {
     locales: ['en', 'es', 'fr', 'de', 'ja', 'ko'],
     defaultLocale: 'en',
-    localeDetection: true,
+    localeDetection: false,
   },
 }
 

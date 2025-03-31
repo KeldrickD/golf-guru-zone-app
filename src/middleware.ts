@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, extractLocaleFromPath } from '@/lib/route-utils';
 
 // Define premium feature paths that require subscription
 const PREMIUM_PATHS = [
@@ -10,7 +11,7 @@ const PREMIUM_PATHS = [
   '/api/courses',  // Advanced course search
 ];
 
-// Define authenticated paths
+// Define authenticated paths - add these with locale pattern
 const AUTH_PATHS = [
   '/dashboard',
   '/api/subscription',
@@ -18,8 +19,6 @@ const AUTH_PATHS = [
 ];
 
 const PUBLIC_FILE = /\.(.*)$/;
-const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'ja', 'ko'];
-const DEFAULT_LOCALE = 'en';
 
 /**
  * Middleware to handle language based on URL path
@@ -38,83 +37,58 @@ export async function middleware(request: NextRequest) {
 
   // Skip middleware for public files like images, fonts, etc.
   if (PUBLIC_FILE.test(request.nextUrl.pathname) || 
-      request.nextUrl.pathname.includes('/api/')) {
+      request.nextUrl.pathname.startsWith('/_next') ||
+      request.nextUrl.pathname.startsWith('/api/')) {
     return response;
   }
 
-  // Get the preferred locale from the request
-  const locale = getLocale(request);
   const pathname = request.nextUrl.pathname;
-
+  
   // Check if the pathname already has a locale prefix
-  const pathnameHasLocale = SUPPORTED_LOCALES.some(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  );
+  const pathLocale = extractLocaleFromPath(pathname);
+  const pathnameHasLocale = !!pathLocale;
 
-  // If the pathname doesn't have locale and we should add it
-  if (!pathnameHasLocale && !pathname.startsWith('/_next')) {
+  // If the pathname doesn't have locale prefix, add it
+  if (!pathnameHasLocale) {
+    // Get the preferred locale from the request
+    const locale = getLocale(request);
+    
     // Build the new URL with the locale prefix
-    const newUrl = new URL(`/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`, request.url);
+    let newPath = `/${locale}${pathname === '/' ? '' : pathname}`;
+    
+    // Ensure we don't end up with double slashes
+    newPath = newPath.replace(/\/+/g, '/');
+    
+    const newUrl = new URL(newPath, request.url);
     newUrl.search = request.nextUrl.search;
     return NextResponse.redirect(newUrl);
   }
 
   // For pages with locale, update HTML lang attribute
-  if (pathnameHasLocale) {
-    response.headers.set('x-locale', locale);
+  if (pathnameHasLocale && pathLocale) {
+    response.headers.set('x-locale', pathLocale);
     
-    // Special case for /en, /fr, etc. - redirect to home page
-    if (SUPPORTED_LOCALES.includes(pathname.slice(1)) && pathname.split('/').length === 2) {
-      return NextResponse.redirect(new URL(`${pathname}/`, request.url));
-    }
+    // Authentication logic for locale prefixed paths
+    const pathWithoutLocale = pathname.substring(pathLocale.length + 1) || '/';
+    const token = await getToken({ req: request });
     
-    return response;
-  }
+    // Check if this is an auth path without considering locale
+    const isAuthPath = AUTH_PATHS.some(path => pathWithoutLocale.startsWith(path));
+    const isPremiumPath = PREMIUM_PATHS.some(path => pathWithoutLocale.startsWith(path));
 
-  const token = await getToken({ req: request });
-  const isAuthPath = AUTH_PATHS.some(path => request.nextUrl.pathname.startsWith(path));
-  const isPremiumPath = PREMIUM_PATHS.some(path => request.nextUrl.pathname.startsWith(path));
-
-  // Redirect authenticated users away from auth pages
-  if (token && isAuthPath) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Redirect unauthenticated users to login
-  if (!token && !isAuthPath) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // Check premium access for premium paths
-  if (isPremiumPath && token && !token.isPremium) {
-    return NextResponse.redirect(new URL('/pricing', request.url));
-  }
-
-  // For authenticated users, check subscription status for premium features
-  if (isPremiumPath && token) {
-    const subscription = (token.user as any).subscription;
-    const requestCount = parseInt(request.headers.get('x-request-count') || '0');
-
-    // If no subscription and exceeded free tier limits
-    if (!subscription && requestCount >= 2) {
-      return NextResponse.json(
-        {
-          error: 'Free tier limit reached. Please upgrade to continue using this feature.',
-          upgradeUrl: '/pricing'
-        },
-        { status: 403 }
-      );
+    // Redirect unauthenticated users to login
+    if (!token && isAuthPath) {
+      return NextResponse.redirect(new URL(`/${pathLocale}/login?callbackUrl=${encodeURIComponent(pathname)}`, request.url));
     }
 
-    // If subscription is not active
-    if (subscription?.status !== 'active') {
-      return NextResponse.json(
-        {
-          error: 'Your subscription is not active. Please update your payment method or reactivate your subscription.',
-          manageUrl: '/dashboard/subscription'
-        },
-        { status: 403 }
-      );
+    // Premium path checks for authenticated users
+    if (token && isPremiumPath) {
+      // Check premium status in token
+      const hasSubscription = token.subscription === 'premium';
+      
+      if (!hasSubscription) {
+        return NextResponse.redirect(new URL(`/${pathLocale}/pricing`, request.url));
+      }
     }
   }
 
@@ -131,9 +105,7 @@ export async function middleware(request: NextRequest) {
 function getLocale(request: NextRequest): string {
   // 1. Check URL path
   const pathname = request.nextUrl.pathname;
-  const pathLocale = SUPPORTED_LOCALES.find(
-    locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  );
+  const pathLocale = extractLocaleFromPath(pathname);
   
   if (pathLocale) return pathLocale;
 
@@ -163,11 +135,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }; 
