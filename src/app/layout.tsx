@@ -6,12 +6,10 @@ import '@/styles/mobile-charts.css';
 import '@/styles/mobile.css';
 import { Navigation } from '@/components/layout/Navigation';
 import Footer from '@/components/Footer';
-import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/Toaster';
-import { SessionProvider } from 'next-auth/react';
 import Script from 'next/script';
-import { LanguageProvider } from '@/context/LanguageContext';
 import { cn } from '@/lib/utils';
+import { Providers } from '@/components/Providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -65,22 +63,18 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/splash/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
       </head>
       <body className={cn('min-h-screen font-sans antialiased', inter.className)}>
-        <SessionProvider>
-          <LanguageProvider>
-            <ThemeProvider>
-              <div className="flex h-screen">
-                <div className="w-64 border-r">
-                  <Navigation />
-                </div>
-                <main className="flex-1 overflow-auto">
-                  {children}
-                </main>
-              </div>
-              <Footer />
-              <Toaster />
-            </ThemeProvider>
-          </LanguageProvider>
-        </SessionProvider>
+        <Providers>
+          <div className="flex h-screen">
+            <div className="w-64 border-r">
+              <Navigation />
+            </div>
+            <main className="flex-1 overflow-auto">
+              {children}
+            </main>
+          </div>
+          <Footer />
+          <Toaster />
+        </Providers>
         
         {/* Service worker registration script */}
         <Script

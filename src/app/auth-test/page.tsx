@@ -1,10 +1,10 @@
 'use client';
 
-import { useSession } from '@/components/SessionProvider';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/Button';
 
 export default function AuthTest() {
-  const { session, status } = useSession();
+  const { data: session, status } = useSession();
 
   if (status === 'loading') {
     return <div>Loading...</div>;

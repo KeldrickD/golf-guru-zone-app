@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession } from '@/components/SessionProvider';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { 
@@ -105,7 +105,7 @@ const fadeInVariants = {
 
 export default function HomePage() {
   const router = useRouter();
-  const { session, status } = useSession();
+  const { data: session, status } = useSession();
   
   const handleGetStarted = () => {
     if (status === 'authenticated') {
