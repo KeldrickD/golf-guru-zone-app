@@ -29,12 +29,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Add i18n configuration
-  i18n: {
-    locales: ['en', 'es', 'fr', 'de', 'ja', 'ko'],
-    defaultLocale: 'en',
-    localeDetection: false,
-  },
 }
 
 module.exports = nextConfig 

@@ -28,70 +28,71 @@ const PUBLIC_FILE = /\.(.*)$/;
  * - /courses -> Default language (from cookies or browser) version of courses
  */
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next();
-
-  // Handle CORS preflight requests
-  if (request.method === 'OPTIONS') {
-    return response;
-  }
-
-  // Skip middleware for public files like images, fonts, etc.
-  if (PUBLIC_FILE.test(request.nextUrl.pathname) || 
-      request.nextUrl.pathname.startsWith('/_next') ||
-      request.nextUrl.pathname.startsWith('/api/')) {
-    return response;
-  }
-
-  const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
   
+  // Skip middleware for API routes and public files
+  if (
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.includes('/static/') ||
+    PUBLIC_FILE.test(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
   // Check if the pathname already has a locale prefix
   const pathLocale = extractLocaleFromPath(pathname);
-  const pathnameHasLocale = !!pathLocale;
-
-  // If the pathname doesn't have locale prefix, add it
-  if (!pathnameHasLocale) {
-    // Get the preferred locale from the request
+  
+  // If the pathname doesn't have locale prefix, redirect to add it
+  if (!pathLocale) {
+    // Get the preferred locale
     const locale = getLocale(request);
     
     // Build the new URL with the locale prefix
-    let newPath = `/${locale}${pathname === '/' ? '' : pathname}`;
-    
-    // Ensure we don't end up with double slashes
-    newPath = newPath.replace(/\/+/g, '/');
-    
-    const newUrl = new URL(newPath, request.url);
+    const newUrl = new URL(`/${locale}${pathname === '/' ? '' : pathname}`, request.url);
     newUrl.search = request.nextUrl.search;
+    
+    // Create a redirect response
     return NextResponse.redirect(newUrl);
   }
-
-  // For pages with locale, update HTML lang attribute
-  if (pathnameHasLocale && pathLocale) {
-    response.headers.set('x-locale', pathLocale);
-    
-    // Authentication logic for locale prefixed paths
-    const pathWithoutLocale = pathname.substring(pathLocale.length + 1) || '/';
+  
+  // For pages with locale, proceed with auth checks if needed
+  const response = NextResponse.next();
+  
+  // Set locale in response headers
+  response.headers.set('x-locale', pathLocale);
+  
+  // Get the path without locale prefix for auth checks
+  const pathWithoutLocale = pathname.substring(pathLocale.length + 1) || '/';
+  
+  // Only perform auth checks on protected paths
+  if (AUTH_PATHS.some(path => pathWithoutLocale.startsWith(path))) {
     const token = await getToken({ req: request });
     
-    // Check if this is an auth path without considering locale
+    // Check if auth required
     const isAuthPath = AUTH_PATHS.some(path => pathWithoutLocale.startsWith(path));
     const isPremiumPath = PREMIUM_PATHS.some(path => pathWithoutLocale.startsWith(path));
-
+    
     // Redirect unauthenticated users to login
     if (!token && isAuthPath) {
-      return NextResponse.redirect(new URL(`/${pathLocale}/login?callbackUrl=${encodeURIComponent(pathname)}`, request.url));
+      return NextResponse.redirect(
+        new URL(`/${pathLocale}/login?callbackUrl=${encodeURIComponent(pathname)}`, request.url)
+      );
     }
-
+    
     // Premium path checks for authenticated users
     if (token && isPremiumPath) {
       // Check premium status in token
       const hasSubscription = token.subscription === 'premium';
       
       if (!hasSubscription) {
-        return NextResponse.redirect(new URL(`/${pathLocale}/pricing`, request.url));
+        return NextResponse.redirect(
+          new URL(`/${pathLocale}/pricing`, request.url)
+        );
       }
     }
   }
-
+  
   return response;
 }
 
@@ -103,19 +104,13 @@ export async function middleware(request: NextRequest) {
  * 4. Default locale
  */
 function getLocale(request: NextRequest): string {
-  // 1. Check URL path
-  const pathname = request.nextUrl.pathname;
-  const pathLocale = extractLocaleFromPath(pathname);
-  
-  if (pathLocale) return pathLocale;
-
-  // 2. Check cookie
+  // 1. Check cookie
   const cookieLocale = request.cookies.get('language')?.value;
   if (cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale)) {
     return cookieLocale;
   }
 
-  // 3. Check Accept-Language header
+  // 2. Check Accept-Language header
   const acceptLanguage = request.headers.get('accept-language');
   if (acceptLanguage) {
     const acceptedLocales = acceptLanguage.split(',');
@@ -127,7 +122,7 @@ function getLocale(request: NextRequest): string {
     }
   }
 
-  // 4. Default locale
+  // 3. Default locale
   return DEFAULT_LOCALE;
 }
 
