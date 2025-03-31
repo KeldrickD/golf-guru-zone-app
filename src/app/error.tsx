@@ -14,16 +14,50 @@ export default function Error({
     console.error(error);
   }, [error]);
 
+  // Using a completely self-contained component with inline styles
+  // No layout dependencies that might use session
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold mb-4">Something went wrong!</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        maxWidth: '28rem'
+      }}>
+        <h2 style={{
+          fontSize: '1.875rem',
+          fontWeight: 'bold',
+          marginBottom: '1rem'
+        }}>Something went wrong!</h2>
+        <p style={{
+          color: '#6b7280',
+          marginBottom: '1.5rem'
+        }}>
           We apologize for the inconvenience. Please try again later.
         </p>
         <button
           onClick={reset}
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            backgroundColor: '#0284c7',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            height: '2.5rem',
+            paddingLeft: '1rem',
+            paddingRight: '1rem'
+          }}
         >
           Try again
         </button>

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 
+// This prevents the route from being statically optimized
+export const dynamic = 'force-dynamic';
+
 interface Shot {
   distance: number | null;
   result: string | null;

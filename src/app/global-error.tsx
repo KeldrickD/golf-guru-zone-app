@@ -1,10 +1,23 @@
-export default function NotFound() {
-  // Using a completely self-contained component with inline styles
-  // No dependencies on layout components that use session
+'use client';
+
+import { useEffect } from 'react';
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    // Log the error to an error reporting service
+    console.error(error);
+  }, [error]);
+
   return (
     <html lang="en">
       <head>
-        <title>404 - Page Not Found</title>
+        <title>500 - Server Error</title>
       </head>
       <body>
         <div style={{
@@ -24,15 +37,15 @@ export default function NotFound() {
               fontSize: '1.875rem',
               fontWeight: 'bold',
               marginBottom: '1rem'
-            }}>404 - Page Not Found</h2>
+            }}>500 - Server Error</h2>
             <p style={{
               color: '#6b7280',
               marginBottom: '1.5rem'
             }}>
-              The page you're looking for doesn't exist or has been moved.
+              Sorry, something went wrong on our server.
             </p>
-            <a 
-              href="/"
+            <button
+              onClick={reset}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -42,14 +55,15 @@ export default function NotFound() {
                 fontWeight: '500',
                 backgroundColor: '#0284c7',
                 color: 'white',
+                border: 'none',
+                cursor: 'pointer',
                 height: '2.5rem',
                 paddingLeft: '1rem',
-                paddingRight: '1rem',
-                textDecoration: 'none'
+                paddingRight: '1rem'
               }}
             >
-              Return Home
-            </a>
+              Try again
+            </button>
           </div>
         </div>
       </body>
