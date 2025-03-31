@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-// Remove next-auth dependency
-import { useSession } from '@/components/SessionProvider';
+import { useSession } from 'next-auth/react';
 
 export type SubscriptionTier = 'FREE' | 'PREMIUM' | 'PRO';
 
 export const useSubscription = () => {
-  const { session } = useSession();
+  const { data: session } = useSession();
   const [tier, setTier] = useState<SubscriptionTier>('PREMIUM'); // Default to PREMIUM for testing
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

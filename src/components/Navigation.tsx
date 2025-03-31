@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
-import { useSession } from '@/components/SessionProvider';
+import { useSession } from 'next-auth/react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { motion } from 'framer-motion';
 import { useTheme } from './ThemeProvider';
