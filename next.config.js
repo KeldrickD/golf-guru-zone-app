@@ -14,6 +14,11 @@ const nextConfig = {
   },
   // Set build output to standalone to support Vercel deployment
   output: 'standalone',
+  // Don't clean the .next directory between builds to preserve service worker
+  experimental: {
+    // This prevents certain pages from being statically generated
+    excludeDefaultMomentLocales: false,
+  },
   images: {
     unoptimized: true,
   },
@@ -24,11 +29,6 @@ const nextConfig = {
   // Ignore ESLint errors during build
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  // Configure non-static paths - error pages will be server-rendered
-  experimental: {
-    // This prevents certain pages from being statically generated
-    excludeDefaultMomentLocales: false,
   },
 }
 

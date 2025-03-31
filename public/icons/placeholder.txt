@@ -1,0 +1,7 @@
+This directory should contain the following icon files:
+
+1. icon-192x192.png
+2. icon-512x512.png
+
+These files are referenced in the manifest.json file.
+Please create proper icon files or the browser will show 404 errors when trying to load them. 
