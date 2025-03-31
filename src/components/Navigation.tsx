@@ -114,7 +114,7 @@ const navigationItems: NavigationItem[] = [
 const Navigation = () => {
   const { t } = useLanguage();
   const pathname = usePathname() || '';
-  const { session, status } = useSession();
+  const { data: session, status } = useSession();
   const { tier } = useSubscription();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);

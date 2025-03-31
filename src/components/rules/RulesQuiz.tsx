@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select';
-import { AlertCircle, CheckCircle, HelpCircle, XCircle, Award, ArrowRight, Rotate, Flag } from 'lucide-react';
+import { AlertCircle, CheckCircle, HelpCircle, XCircle, Award, ArrowRight, RefreshCw, Flag } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/ScrollArea';
 
@@ -603,7 +603,7 @@ export const RulesQuiz = () => {
                 className="w-full" 
                 onClick={restartQuiz}
               >
-                <Rotate className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Start New Quiz
               </Button>
               <Button 

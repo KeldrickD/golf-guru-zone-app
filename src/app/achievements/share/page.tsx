@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Trophy, Award, Medal, Star, TrendingUp, ChevronLeft } from 'lucide-react';
@@ -60,7 +60,7 @@ const achievementIcons = {
   improvement: <TrendingUp className="h-6 w-6 text-green-500" />
 };
 
-export default function SharedAchievementPage() {
+function AchievementContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [achievement, setAchievement] = useState<any>(null);
@@ -204,5 +204,17 @@ export default function SharedAchievementPage() {
         </Card>
       </Section>
     </div>
+  );
+}
+
+export default function SharedAchievementPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <AchievementContent />
+    </Suspense>
   );
 } 

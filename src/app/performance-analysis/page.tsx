@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { StrokesGainedAnalysis } from '@/components/analysis/StrokesGainedAnalysis';
@@ -11,10 +11,11 @@ import {
   Video, 
   Target, 
   Users, 
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 
-export default function PerformanceAnalysisPage() {
+function PerformanceAnalysisContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('strokes-gained');
   
@@ -104,5 +105,18 @@ export default function PerformanceAnalysisPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function PerformanceAnalysisPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading analysis tools...</span>
+      </div>
+    }>
+      <PerformanceAnalysisContent />
+    </Suspense>
   );
 } 
