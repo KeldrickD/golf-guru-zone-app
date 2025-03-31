@@ -28,11 +28,18 @@ const DEFAULT_LOCALE = 'en';
  * - /es/courses -> Spanish version of courses
  * - /courses -> Default language (from cookies or browser) version of courses
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    return response;
+  }
+
   // Skip middleware for public files like images, fonts, etc.
   if (PUBLIC_FILE.test(request.nextUrl.pathname) || 
       request.nextUrl.pathname.includes('/api/')) {
-    return;
+    return response;
   }
 
   // Get the preferred locale from the request
@@ -54,7 +61,6 @@ export function middleware(request: NextRequest) {
 
   // For pages with locale, update HTML lang attribute
   if (pathnameHasLocale) {
-    const response = NextResponse.next();
     response.headers.set('x-locale', locale);
     return response;
   }
@@ -63,11 +69,19 @@ export function middleware(request: NextRequest) {
   const isAuthPath = AUTH_PATHS.some(path => request.nextUrl.pathname.startsWith(path));
   const isPremiumPath = PREMIUM_PATHS.some(path => request.nextUrl.pathname.startsWith(path));
 
-  // Check authentication for protected routes
-  if (isAuthPath && !token) {
-    const url = new URL('/api/auth/signin', request.url);
-    url.searchParams.set('callbackUrl', request.url);
-    return NextResponse.redirect(url);
+  // Redirect authenticated users away from auth pages
+  if (token && isAuthPath) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Redirect unauthenticated users to login
+  if (!token && !isAuthPath) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Check premium access for premium paths
+  if (isPremiumPath && token && !token.isPremium) {
+    return NextResponse.redirect(new URL('/pricing', request.url));
   }
 
   // For authenticated users, check subscription status for premium features
@@ -98,7 +112,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 /**
@@ -141,6 +155,13 @@ function getLocale(request: NextRequest): string {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }; 
